@@ -1,3 +1,5 @@
+import { Attachment } from '../../types';
+
 export interface CodeFile {
   id: string;
   name: string;
@@ -85,6 +87,7 @@ export interface AssistantMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  attachments?: Attachment[];
   diff?: DiffProposal;
   fileOperations?: FileOperationProposal[];
   isThinking?: boolean;

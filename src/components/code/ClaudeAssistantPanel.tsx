@@ -15,11 +15,14 @@ import {
   FilePlus,
   Edit2,
   CheckCircle2,
-  Layers
+  Layers,
+  FileText,
+  FileCode
 } from 'lucide-react';
 import { DiffViewer } from './DiffViewer';
 import { computeUnifiedDiff, extractCodeBlocksFromAIResponse, inferFileOperation } from './diffUtils';
 import { CodeProject, CodeFile, DiffProposal, ConsoleLog, ProblemItem, AssistantMessage, FileOperationProposal } from './types';
+import { Attachment } from '../../types';
 import { ChatApiClient } from '../../services/apiClient';
 
 interface ClaudeAssistantPanelProps {
@@ -241,17 +244,79 @@ export const ClaudeAssistantPanel: React.FC<ClaudeAssistantPanelProps> = ({
     setIsModelDropdownOpen(false);
   };
 
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const processFiles = (files: FileList | File[]) => {
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+
+      if (file.type.startsWith('image/')) {
+        reader.onload = () => {
+          setAttachments((prev) => [
+            ...prev,
+            {
+              id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              name: file.name,
+              type: file.type,
+              size: file.size,
+              dataUrl: reader.result as string
+            }
+          ]);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        reader.onload = () => {
+          setAttachments((prev) => [
+            ...prev,
+            {
+              id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              name: file.name,
+              type: file.type || 'text/plain',
+              size: file.size,
+              textContent: reader.result as string
+            }
+          ]);
+        };
+        reader.readAsText(file);
+      }
+    });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files);
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
+    }
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputPrompt.trim() || isStreaming) return;
+    if ((!inputPrompt.trim() && attachments.length === 0) || isStreaming) return;
 
     const userText = inputPrompt.trim();
+    const currentAttachments = [...attachments];
     setInputPrompt('');
+    setAttachments([]);
 
     const userMsg: AssistantMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
-      content: userText,
+      content: userText || (currentAttachments.length > 0 ? `Sent ${currentAttachments.length} file(s)` : ''),
+      attachments: currentAttachments,
       timestamp: Date.now()
     };
 
@@ -358,10 +423,25 @@ Choose the technology and architecture that best fits the user's actual requirem
     let accumulatedText = '';
     let accumulatedThinking = '';
 
+    let attachmentContext = '';
+    if (currentAttachments.length > 0) {
+      for (const att of currentAttachments) {
+        if (att.textContent) {
+          attachmentContext += `\n\n[Attached File: ${att.name}]\n\`\`\`\n${att.textContent}\n\`\`\``;
+        }
+      }
+    }
+
     try {
       await apiClient.current.streamChat(
         [
-          { id: '1', role: 'user', content: `${userText}\n\n[Context]\n${codeContext}`, createdAt: Date.now() }
+          {
+            id: '1',
+            role: 'user',
+            content: `${userText || 'Please inspect the attached file(s) and project.'}${attachmentContext}\n\n[Context]\n${codeContext}`,
+            attachments: currentAttachments,
+            createdAt: Date.now()
+          }
         ],
         'sonnet-5',
         systemPrompt,
@@ -766,6 +846,42 @@ Choose the technology and architecture that best fits the user's actual requirem
                       />
                     </div>
                   )}
+
+                  {msg.attachments && msg.attachments.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-1.5 max-w-[85%]">
+                      {msg.attachments.map((att) => (
+                        <div
+                          key={att.id}
+                          className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#22201D] border border-[#2B2A27] text-xs text-[#ECEBE7]"
+                        >
+                          {att.dataUrl ? (
+                            <img
+                              src={att.dataUrl}
+                              alt={att.name}
+                              className="w-5 h-5 object-cover rounded border border-[#333]"
+                            />
+                          ) : att.name.endsWith('.js') || att.name.endsWith('.ts') || att.name.endsWith('.py') ? (
+                            <FileCode className="w-3.5 h-3.5 text-[#DA7756]" />
+                          ) : (
+                            <FileText className="w-3.5 h-3.5 text-[#8C8A82]" />
+                          )}
+                          <span className="truncate max-w-[140px] text-[11px]">{att.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {msg.content && (
+                    <div
+                      className={`px-3.5 py-2 rounded-2xl text-xs leading-relaxed max-w-[85%] ${
+                        msg.role === 'user'
+                          ? 'bg-[#2C2A26] text-white border border-[#3A3834]/60'
+                          : 'bg-[#1C1B19] text-[#ECEBE7] border border-[#2B2A27]'
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  )}
                 </div>
               ))}
               <div ref={messagesEndRef} />
@@ -773,7 +889,52 @@ Choose the technology and architecture that best fits the user's actual requirem
 
             {/* Composer Input Container (matching Image 100%) */}
             <form onSubmit={handleSendMessage} className="p-3 pt-1 border-t border-[#201F1D]">
-              <div className="bg-[#1C1B19] border border-[#2B2A27] focus-within:border-[#DA7756]/60 rounded-2xl p-2.5 flex flex-col gap-2 shadow-xs transition-colors">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+                accept="image/*,.js,.jsx,.ts,.tsx,.html,.css,.json,.py,.java,.c,.cpp,.rs,.go,.md,.txt,.pdf,.csv,.yml,.yaml,.sh,.sql,.xml,.svg"
+              />
+
+              <div
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={handleDrop}
+                className="bg-[#1C1B19] border border-[#2B2A27] focus-within:border-[#DA7756]/60 rounded-2xl p-2.5 flex flex-col gap-2 shadow-xs transition-colors"
+              >
+                {/* Active Attachment Previews */}
+                {attachments.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pb-1 border-b border-[#262522]">
+                    {attachments.map((att) => (
+                      <div
+                        key={att.id}
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-[#141413] border border-[#2E2D2A] text-xs text-[#ECEBE7]"
+                      >
+                        {att.dataUrl ? (
+                          <img
+                            src={att.dataUrl}
+                            alt={att.name}
+                            className="w-5 h-5 object-cover rounded border border-[#333]"
+                          />
+                        ) : att.name.endsWith('.js') || att.name.endsWith('.ts') || att.name.endsWith('.py') ? (
+                          <FileCode className="w-3.5 h-3.5 text-[#DA7756]" />
+                        ) : (
+                          <FileText className="w-3.5 h-3.5 text-[#8C8A82]" />
+                        )}
+                        <span className="truncate max-w-[150px] text-[11px]">{att.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeAttachment(att.id)}
+                          className="text-[#7E7C76] hover:text-red-400 p-0.5 rounded cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <input
                   type="text"
                   value={inputPrompt}
@@ -787,9 +948,9 @@ Choose the technology and architecture that best fits the user's actual requirem
                   <div className="flex items-center gap-1 text-[#8C8A82]">
                     <button
                       type="button"
-                      onClick={() => alert(`Active file context attached: ${activeFile?.path || 'No active file'}`)}
-                      className="p-1.5 hover:text-[#ECEBE7] hover:bg-[#262522] rounded-lg transition-colors"
-                      title="Attach file context"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-1.5 hover:text-[#ECEBE7] hover:bg-[#262522] rounded-lg transition-colors cursor-pointer"
+                      title="Attach file(s)"
                     >
                       <Paperclip className="w-3.5 h-3.5" />
                     </button>
@@ -873,8 +1034,8 @@ Choose the technology and architecture that best fits the user's actual requirem
 
                     <button
                       type="submit"
-                      disabled={!inputPrompt.trim() || isStreaming}
-                      className="w-7 h-7 rounded-xl bg-[#DA7756] hover:bg-[#C86545] disabled:opacity-40 text-white flex items-center justify-center shadow transition-all active:scale-95"
+                      disabled={(!inputPrompt.trim() && attachments.length === 0) || isStreaming}
+                      className="w-7 h-7 rounded-xl bg-[#DA7756] hover:bg-[#C86545] disabled:opacity-40 text-white flex items-center justify-center shadow transition-all active:scale-95 cursor-pointer"
                     >
                       <ArrowUp className="w-4 h-4 stroke-[2.5]" />
                     </button>
