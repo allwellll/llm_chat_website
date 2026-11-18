@@ -1,384 +1,53 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  ChevronDown,
-  ChevronRight,
-  Check,
-  Info,
-  Sparkles
-} from 'lucide-react';
+import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { ChevronDown, Check } from 'lucide-react';
+import { channelSnapshot, channelForModel, loadChannels, selectChannel, subscribeChannels } from '../services/channels';
 import { useChat } from '../context/ChatContext';
-import { useSettings } from '../context/SettingsContext';
-import { useAuth } from '../context/AuthContext';
-import { ThinkingEffort, ModelOption } from '../types';
-import { PRIMARY_MODELS, MORE_MODELS, ALL_MODELS } from '../services/mockData';
+import { ModelProfileId } from '../types';
+import { modelName } from '../services/models';
 
 export const ModelSelectorDropdown: React.FC = () => {
-  const { selectedModel, setSelectedModel, setActivePageView } = useChat();
-  const { settings, updateSettings } = useSettings();
-  const { user } = useAuth();
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeSubmenu, setActiveSubmenu] = useState<'effort' | 'more-models' | null>(null);
-
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const effortTimerRef = useRef<any>(null);
-  const moreTimerRef = useRef<any>(null);
-
-  const isMaxTier = Boolean(
-    user?.plan === 'max' ||
-    user?.plan === 'team' ||
-    user?.plan === 'enterprise' ||
-    user?.email?.toLowerCase() === 'tenzinrey@gmail.com'
-  );
-  const isProTier = Boolean(isMaxTier || user?.plan === 'pro');
-
-  const isModelLocked = (model: ModelOption) => {
-    if (model.isFable || model.id === 'fable-5') {
-      return !isMaxTier;
-    }
-    if (model.isPro) {
-      return !isProTier;
-    }
-    return false;
-  };
-
-  const currentModel = ALL_MODELS.find((m) => m.id === selectedModel) || PRIMARY_MODELS[2]; // default Sonnet 5
-
-  // Close when clicking outside
+  const [open, setOpen] = useState(false);
+  const { channels, error } = useSyncExternalStore(subscribeChannels, channelSnapshot);
+  const { selectedModel, setSelectedModel } = useChat();
+  const selected = channelForModel(selectedModel)?.id;
+  const name = modelName(selectedModel);
+  const entries = channels.flatMap(channel => channel.protocol === 'responses'
+    ? (channel.models || []).filter((model): model is 'gpt-6-astra' | 'gpt-6.1-sol' => model === 'gpt-6-astra' || model === 'gpt-6.1-sol').map(model => ({ channel, model: model as ModelProfileId }))
+    : [{ channel, model: 'opus-5' as ModelProfileId }]);
+  const root = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const selectedLabel = channels.find(channel => channel.id === selected)?.label;
+  useEffect(() => { void loadChannels().catch(() => {}); }, []);
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-        setActiveSubmenu(null);
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
-
-  const handleSelectModel = (model: ModelOption) => {
-    if (isModelLocked(model)) {
-      setActivePageView('upgrade');
-      setIsOpen(false);
-      return;
-    }
-    setSelectedModel(model.id);
-    setIsOpen(false);
-    setActiveSubmenu(null);
-  };
-
-  const handleSelectEffort = (effort: ThinkingEffort) => {
-    updateSettings({ thinkingEffort: effort });
-    setActiveSubmenu(null);
-    setIsOpen(false);
-  };
-
-  const handleUpgradeClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setActivePageView('upgrade');
-    setIsOpen(false);
-  };
-
-  const effortLabel = () => {
-    const eff = settings.thinkingEffort || 'medium';
-    switch (eff) {
-      case 'low':
-        return 'Low';
-      case 'medium':
-        return 'Medium';
-      case 'high':
-        return 'High';
-      case 'extra':
-        return 'Extra';
-      case 'max':
-        return 'Max';
-      default:
-        return 'Medium';
-    }
-  };
-
-  return (
-    <div className="relative inline-block text-left select-none" ref={dropdownRef}>
-      
-      {/* 1. TRIGGER BUTTON INSIDE COMPOSER */}
-      <button
-        type="button"
-        onClick={() => {
-          setIsOpen(!isOpen);
-          setActiveSubmenu(null);
-        }}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-transparent hover:bg-[#242320] text-xs font-normal text-[#9C9A92] hover:text-[#ECEBE7] transition-all border border-transparent hover:border-[#2D2C28]"
-      >
-        <span className="font-medium text-[#ECEBE7]">{currentModel.shortName}</span>
-        {currentModel.supportsThinking && settings.thinkingEnabled !== false && (
-          <span className="text-[11px] text-[#706E68] capitalize font-normal">
-            {effortLabel()}
-          </span>
-        )}
-        <ChevronDown className="w-3 h-3 text-[#706E68]" />
-      </button>
-
-      {/* 2. MAIN DROPDOWN POPOVER */}
-      {isOpen && (
-        <div
-          className="absolute right-0 bottom-full mb-2.5 w-[280px] bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-1.5 z-50 text-xs text-[#ECEBE7] select-none duration-75"
-        >
-          
-          {/* PRIMARY MODELS LIST */}
-          <div className="space-y-0.5">
-            {PRIMARY_MODELS.map((model) => {
-              const isSelected = selectedModel === model.id;
-              const locked = isModelLocked(model);
-
-              return (
-                <div
-                  key={model.id}
-                  onClick={() => handleSelectModel(model)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-colors group ${
-                    isSelected
-                      ? 'bg-[#262522] text-[#ECEBE7]'
-                      : 'hover:bg-[#22211F] text-[#ECEBE7]'
-                  }`}
-                >
-                  <div className="space-y-0.5 pr-2">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-medium text-xs text-[#ECEBE7]">
-                        {model.name}
-                      </span>
-                      {model.isFable ? (
-                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-purple-950/70 border border-purple-800/60 text-purple-300">
-                          Max
-                        </span>
-                      ) : model.isPro ? (
-                        <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-sky-950/70 border border-sky-800/60 text-sky-400">
-                          Pro
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="text-[11px] text-[#8C8A82] leading-tight">
-                      {model.description}
-                    </p>
-                  </div>
-
-                  {/* Right Action: Checkmark or Upgrade Button */}
-                  <div className="shrink-0 flex items-center">
-                    {locked ? (
-                      <button
-                        type="button"
-                        onClick={handleUpgradeClick}
-                        className="px-2 py-0.5 rounded-lg border border-[#383632] hover:border-[#4A4742] hover:bg-[#282724] text-[10px] text-[#B4B3AD] hover:text-[#ECEBE7] font-medium transition-colors"
-                      >
-                        Upgrade
-                      </button>
-                    ) : isSelected ? (
-                      <Check className="w-3.5 h-3.5 text-sky-400 stroke-[2.5]" />
-                    ) : null}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* DIVIDER */}
-          <div className="border-t border-[#262522] my-1" />
-
-          {/* EFFORT ROW */}
-          <div
-            className="relative"
-            onMouseEnter={() => {
-              clearTimeout(effortTimerRef.current);
-              setActiveSubmenu('effort');
-            }}
-            onMouseLeave={() => {
-              effortTimerRef.current = setTimeout(() => {
-                setActiveSubmenu((prev) => (prev === 'effort' ? null : prev));
-              }, 60);
-            }}
-          >
-            <div
-              onClick={() => setActiveSubmenu(activeSubmenu === 'effort' ? null : 'effort')}
-              className={`flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-colors ${
-                activeSubmenu === 'effort' ? 'bg-[#22211F] text-[#ECEBE7]' : 'hover:bg-[#22211F] text-[#9C9A92] hover:text-[#ECEBE7]'
-              }`}
-            >
-              <span className="text-xs">Effort</span>
-              <div className="flex items-center gap-1">
-                <span className="text-[11px] text-[#8C8A82] capitalize">
-                  {effortLabel()}
-                </span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#706E68]" />
-              </div>
-            </div>
-
-            {/* EFFORT SUBMENU PANEL */}
-            {activeSubmenu === 'effort' && (
-              <div
-                className="absolute right-full mr-1.5 bottom-0 w-[260px] bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-2.5 z-50 text-xs duration-75 space-y-2 select-none"
-                onMouseEnter={() => clearTimeout(effortTimerRef.current)}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Top Explanation */}
-                <p className="text-[11px] text-[#8C8A82] leading-relaxed px-1">
-                  Higher effort means more thorough responses, but takes longer and uses your limits faster.
-                </p>
-
-                {/* Effort Levels List (No Off button!) */}
-                <div className="space-y-0.5">
-                  {[
-                    { id: 'low', label: 'Low' },
-                    { id: 'medium', label: 'Medium', isDefault: true },
-                    { id: 'high', label: 'High' },
-                    { id: 'extra', label: 'Extra' },
-                    { id: 'max', label: 'Max', hasInfo: true }
-                  ].map((item) => {
-                    const isSelected = (settings.thinkingEffort || 'medium') === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => handleSelectEffort(item.id as ThinkingEffort)}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-left transition-colors ${
-                          isSelected
-                            ? 'text-[#ECEBE7] font-medium bg-[#242320]'
-                            : 'text-[#9C9A92] hover:bg-[#22211F] hover:text-[#ECEBE7]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <span>{item.label}</span>
-                          {item.isDefault && (
-                            <span className="text-[10px] text-[#706E68] bg-[#242320] border border-[#33312E] px-1.5 py-0.2 rounded">
-                              Default
-                            </span>
-                          )}
-                          {item.hasInfo && (
-                            <Info className="w-3 h-3 text-[#706E68]" />
-                          )}
-                        </div>
-                        {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-sky-400 stroke-[2.5]" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Bottom Divider */}
-                <div className="border-t border-[#262522] my-1" />
-
-                {/* Thinking Toggle Switch */}
-                <div className="flex items-center justify-between px-1 pt-1">
-                  <div className="space-y-0.5">
-                    <div className="text-xs font-medium text-[#ECEBE7]">Thinking</div>
-                    <p className="text-[11px] text-[#8C8A82]">Can think for more complex tasks</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => updateSettings({ thinkingEnabled: settings.thinkingEnabled === false ? true : false })}
-                    className={`w-9 h-5 rounded-full transition-colors relative p-0.5 shrink-0 ${
-                      settings.thinkingEnabled !== false ? 'bg-sky-600' : 'bg-[#2E2D2A]'
-                    }`}
-                  >
-                    <div
-                      className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                        settings.thinkingEnabled !== false ? 'translate-x-4' : 'translate-x-0'
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* MORE MODELS ROW */}
-          <div
-            className="relative"
-            onMouseEnter={() => {
-              clearTimeout(moreTimerRef.current);
-              setActiveSubmenu('more-models');
-            }}
-            onMouseLeave={() => {
-              moreTimerRef.current = setTimeout(() => {
-                setActiveSubmenu((prev) => (prev === 'more-models' ? null : prev));
-              }, 60);
-            }}
-          >
-            <div
-              onClick={() => setActiveSubmenu(activeSubmenu === 'more-models' ? null : 'more-models')}
-              className={`flex items-center justify-between px-3 py-2 rounded-xl cursor-pointer transition-colors ${
-                activeSubmenu === 'more-models' ? 'bg-[#22211F] text-[#ECEBE7]' : 'hover:bg-[#22211F] text-[#9C9A92] hover:text-[#ECEBE7]'
-              }`}
-            >
-              <span className="text-xs">More models</span>
-              <ChevronRight className="w-3.5 h-3.5 text-[#706E68]" />
-            </div>
-
-            {/* MORE MODELS NESTED SUBMENU */}
-            {activeSubmenu === 'more-models' && (
-              <div
-                className="absolute right-full mr-1.5 bottom-0 w-[220px] bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-1.5 z-50 text-xs duration-75"
-                onMouseEnter={() => clearTimeout(moreTimerRef.current)}
-              >
-                <div className="space-y-0.5">
-                  {MORE_MODELS.map((model) => {
-                    const isSelected = selectedModel === model.id;
-
-                    return (
-                      <div
-                        key={model.id}
-                        onClick={() => handleSelectModel(model)}
-                        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl cursor-pointer transition-colors group ${
-                          isSelected
-                            ? 'bg-[#262522] text-[#ECEBE7]'
-                            : 'hover:bg-[#22211F] text-[#ECEBE7]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-xs text-[#ECEBE7]">
-                            {model.name}
-                          </span>
-                          {model.isPro && (
-                            <span className="text-[9px] font-semibold px-1 py-0.2 rounded bg-sky-950/70 border border-sky-800/60 text-sky-400">
-                              Pro
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Checkmark if selected */}
-                        {isSelected && (
-                          <Check className="w-3 h-3 text-sky-400 stroke-[2.5]" />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* FOOTER NOTICE */}
-          {isMaxTier ? (
-            <div className="px-3 py-2 border-t border-[#262522] text-[11px] text-purple-300 flex items-center gap-1.5 font-medium">
-              <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-              <span>Max Plan Active — All models & Fable 5 unlocked</span>
-            </div>
-          ) : (
-            <div className="px-3 py-2 border-t border-[#262522] text-[11px] text-[#706E68] leading-tight">
-              Fable 5 is included in Max plans, or available with usage credits on Pro.{' '}
-              <span
-                onClick={() => {
-                  setActivePageView('upgrade');
-                  setIsOpen(false);
-                }}
-                className="text-[#8C8A82] hover:text-[#ECEBE7] underline cursor-pointer"
-              >
-                Learn more
-              </span>
-            </div>
-          )}
-
-        </div>
-      )}
-    </div>
-  );
+    if (!open) return;
+    const dismiss = (event: PointerEvent) => { if (!root.current?.contains(event.target as Node)) setOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); trigger.current?.focus(); } };
+    document.addEventListener('pointerdown', dismiss);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', dismiss); document.removeEventListener('keydown', escape); };
+  }, [open]);
+  return <div ref={root} className="model-channel-picker relative min-w-0 text-xs">
+    <button ref={trigger} type="button" aria-label={`选择模型：${name}，${selectedLabel || '无可用分组'}`} aria-haspopup="menu" aria-expanded={open}
+      onClick={() => setOpen(!open)} className="model-channel-trigger flex min-w-0 items-center gap-1.5 rounded-xl px-2 py-1 hover:bg-claude-surface text-claude-text-primary transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#DA7756]">
+      <span className="flex min-w-0 flex-col items-start leading-tight">
+        <span className="max-w-[122px] truncate font-medium">{name.replace(/^Claude /, '')}</span>
+        <span data-model-channel-label className="mt-0.5 max-w-[122px] truncate text-[10px] font-normal text-claude-text-muted">{selectedLabel || (channels.length ? '无可用分组' : error ? '分组加载失败' : '加载中…')}</span>
+      </span>
+      <ChevronDown size={12} className={`shrink-0 text-claude-text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+    </button>
+    {open && <div role="menu" aria-label="模型与分组" className="absolute right-0 bottom-full mb-2 w-[272px] max-w-[calc(100vw-32px)] rounded-2xl border border-claude-border bg-claude-card p-1.5 z-50 shadow-xl">
+      <div className="px-3 pt-2 pb-2.5 text-[10px] font-medium tracking-wider text-claude-text-muted">模型与分组</div>
+      {entries.map(({channel, model}) => <button key={`${channel.id}:${model}`} type="button" role="menuitemradio" aria-checked={selected === channel.id && selectedModel === model} aria-label={`${modelName(model)} ${channel.label}`}
+        onClick={() => { selectChannel(channel.id); setSelectedModel(model); setOpen(false); trigger.current?.focus(); }}
+        className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#DA7756] ${selected === channel.id && selectedModel === model ? 'bg-claude-surface' : 'hover:bg-claude-surface'}`}>
+        <span className="min-w-0">
+          <span data-model-name className="block text-[13px] font-medium text-claude-text-primary">{modelName(model)}</span>
+          <span data-group-name className="mt-1 block truncate text-[11px] font-normal text-claude-text-muted">{channel.label}</span>
+        </span>
+        {selected === channel.id && selectedModel === model && <Check size={15} className="shrink-0 text-[#DA7756]" aria-hidden="true" />}
+      </button>)}
+      {!channels.length && <button type="button" role="menuitem" onClick={() => { void loadChannels().catch(() => {}); }} className="w-full rounded-xl px-3 py-3 text-left text-claude-text-secondary">{error ? '分组加载失败，点击重试' : '正在加载分组…'}</button>}
+      <div className="mx-3 mt-2 border-t border-claude-border-subtle pt-2 pb-1.5 text-[10px] text-claude-text-muted">选择模型与分组 · High 推理</div>
+    </div>}
+  </div>;
 };

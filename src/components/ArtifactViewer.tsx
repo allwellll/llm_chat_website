@@ -206,14 +206,14 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({ artifact, onClos
 
   return (
     <div
-      className={`flex flex-col bg-[#1A1917] border-l border-[#2D2C28] h-full transition-all duration-200 ${
+      className={`flex flex-col bg-claude-bg border-l border-claude-border h-full transition-all duration-200 ${
         isFullscreen
           ? 'fixed inset-0 z-50 w-screen h-screen'
           : 'w-full md:w-[50vw] lg:w-[55vw]'
       }`}
     >
       {/* Artifact Top Bar */}
-      <div className="h-13 px-4 border-b border-[#2C2B27] bg-[#1F1E1C] flex items-center justify-between shrink-0">
+      <div className="h-13 px-4 border-b border-claude-border bg-claude-card flex items-center justify-between shrink-0">
         
         {/* Title & Type */}
         <div className="flex items-center gap-2.5 overflow-hidden mr-2">
@@ -221,24 +221,24 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({ artifact, onClos
             <ClaudeArtifactsIcon size={14} color="#DA7756" />
           </div>
           <div className="overflow-hidden">
-            <h3 className="text-xs font-semibold text-[#ECEBE7] truncate">
+            <h3 className="text-xs font-semibold text-claude-text-primary truncate">
               {artifact.title}
             </h3>
-            <span className="text-[10px] text-[#8C8A82] font-mono">
+            <span className="text-[10px] text-claude-text-secondary font-mono">
               {artifact.identifier}
             </span>
           </div>
         </div>
 
         {/* Center Tabs: Preview vs Code */}
-        <div className="flex items-center bg-[#141312] p-0.5 rounded-lg border border-[#2B2A27]">
+        <div className="flex items-center bg-claude-bg p-0.5 rounded-lg border border-claude-border">
           <button
             type="button"
             onClick={() => setActiveTab('preview')}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
               activeTab === 'preview'
-                ? 'bg-[#282724] text-[#ECEBE7] shadow-sm'
-                : 'text-[#8C8A82] hover:text-[#ECEBE7]'
+                ? 'bg-claude-input text-claude-text-primary shadow-sm'
+                : 'text-claude-text-secondary hover:text-claude-text-primary'
             }`}
           >
             <Eye className="w-3.5 h-3.5" />
@@ -250,8 +250,8 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({ artifact, onClos
             onClick={() => setActiveTab('code')}
             className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
               activeTab === 'code'
-                ? 'bg-[#282724] text-[#ECEBE7] shadow-sm'
-                : 'text-[#8C8A82] hover:text-[#ECEBE7]'
+                ? 'bg-claude-input text-claude-text-primary shadow-sm'
+                : 'text-claude-text-secondary hover:text-claude-text-primary'
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
@@ -260,11 +260,11 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({ artifact, onClos
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-1 text-[#8C8A82]">
+        <div className="flex items-center gap-1 text-claude-text-secondary">
           <button
             type="button"
             onClick={() => setKey((k) => k + 1)}
-            className="p-1.5 rounded-lg hover:bg-[#2A2926] hover:text-[#ECEBE7] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-claude-card-hover hover:text-claude-text-primary transition-colors"
             title="Reload sandbox"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -273,7 +273,7 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({ artifact, onClos
           <button
             type="button"
             onClick={copyCode}
-            className="p-1.5 rounded-lg hover:bg-[#2A2926] hover:text-[#ECEBE7] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-claude-card-hover hover:text-claude-text-primary transition-colors"
             title="Copy code"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-[#DA7756]" /> : <Copy className="w-3.5 h-3.5" />}
@@ -282,7 +282,7 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({ artifact, onClos
           <button
             type="button"
             onClick={downloadArtifact}
-            className="p-1.5 rounded-lg hover:bg-[#2A2926] hover:text-[#ECEBE7] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-claude-card-hover hover:text-claude-text-primary transition-colors"
             title="Download file"
           >
             <Download className="w-3.5 h-3.5" />
@@ -291,18 +291,18 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({ artifact, onClos
           <button
             type="button"
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-1.5 rounded-lg hover:bg-[#2A2926] hover:text-[#ECEBE7] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-claude-card-hover hover:text-claude-text-primary transition-colors"
             title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
           >
             {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
 
-          <div className="w-[1px] h-4 bg-[#2C2B27] mx-1" />
+          <div className="w-[1px] h-4 bg-claude-card-hover mx-1" />
 
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-[#2A2926] hover:text-red-400 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-claude-card-hover hover:text-red-400 transition-colors"
             title="Close pane"
           >
             <X className="w-4 h-4" />
@@ -312,18 +312,18 @@ export const ArtifactViewer: React.FC<ArtifactViewerProps> = ({ artifact, onClos
       </div>
 
       {/* Artifact View Body */}
-      <div className="flex-1 relative overflow-hidden bg-[#161514]">
+      <div className="flex-1 relative overflow-hidden bg-claude-bg">
         {activeTab === 'preview' ? (
           <iframe
             key={key}
             srcDoc={iframeSrcDoc}
             title={artifact.title}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-            className="w-full h-full border-0 bg-[#161514]"
+            sandbox=""
+            className="w-full h-full border-0 bg-claude-bg"
           />
         ) : (
-          <div className="h-full overflow-auto p-4 bg-[#141312]">
-            <pre className="text-xs font-mono text-[#ECEBE7] leading-relaxed select-text">
+          <div className="h-full overflow-auto p-4 bg-claude-bg">
+            <pre className="text-xs font-mono text-claude-text-primary leading-relaxed select-text">
               <code>{artifact.content}</code>
             </pre>
           </div>

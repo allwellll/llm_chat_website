@@ -104,7 +104,7 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
   return (
     <div
       ref={dropdownRef}
-      className={`absolute left-0 w-64 bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-1.5 z-50 duration-75 select-none text-xs text-[#ECEBE7] ${
+      className={`absolute left-0 w-64 bg-claude-card border border-claude-border rounded-2xl shadow-2xl p-1.5 z-50 duration-75 select-none text-xs text-claude-text-primary ${
         placement === 'bottom' ? 'top-full mt-2' : 'bottom-full mb-2'
       }`}
       onClick={(e) => e.stopPropagation()}
@@ -116,15 +116,15 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
           onUploadClick();
           onClose();
         }}
-        className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+        className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
       >
         <div className="flex items-center gap-2.5">
-          <Paperclip className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+          <Paperclip className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
           <span>Add files or photos</span>
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-[#7E7C76] font-mono">
-          <span className="px-1.5 py-0.5 rounded bg-[#252422] border border-[#33312E]">Ctrl</span>
-          <span className="px-1.5 py-0.5 rounded bg-[#252422] border border-[#33312E]">U</span>
+        <div className="flex items-center gap-1 text-[10px] text-claude-text-muted font-mono">
+          <span className="px-1.5 py-0.5 rounded bg-claude-input border border-claude-border">Ctrl</span>
+          <span className="px-1.5 py-0.5 rounded bg-claude-input border border-claude-border">U</span>
         </div>
       </button>
 
@@ -135,9 +135,9 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
           onScreenshotCapture();
           onClose();
         }}
-        className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+        className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
       >
-        <Camera className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+        <Camera className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
         <span>Take a screenshot</span>
       </button>
 
@@ -149,13 +149,13 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
       >
         <div
           onClick={() => setActiveSubmenu(activeSubmenu === 'project' ? null : 'project')}
-          className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-[#23221F] cursor-pointer transition-colors group"
+          className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-claude-surface cursor-pointer transition-colors group"
         >
           <div className="flex items-center gap-2.5">
-            <FolderPlus className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+            <FolderPlus className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
             <span>Add to project</span>
           </div>
-          <div className="flex items-center gap-1 text-[#8C8A82]">
+          <div className="flex items-center gap-1 text-claude-text-secondary">
             {activeProject && <span className="text-[10px] text-[#DA7756] truncate max-w-[70px]">{activeProject.name}</span>}
             <ChevronRight className="w-3.5 h-3.5" />
           </div>
@@ -164,15 +164,15 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
         {/* Project Submenu */}
         {activeSubmenu === 'project' && (
           <div
-            className={`absolute w-56 bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in duration-150 space-y-0.5 ${
+            className={`absolute w-56 bg-claude-card border border-claude-border rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in duration-150 space-y-0.5 ${
               placement === 'bottom' ? 'top-0' : 'bottom-0'
             } ${submenuSide === 'left' ? 'right-full mr-2' : 'left-full ml-2'}`}
           >
-            <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#7E7C76]">
+            <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-claude-text-muted">
               Choose Project
             </div>
             {projects.length === 0 ? (
-              <div className="p-2 text-[11px] text-[#7E7C76] text-center">
+              <div className="p-2 text-[11px] text-claude-text-muted text-center">
                 No projects created yet
               </div>
             ) : (
@@ -182,8 +182,8 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
                   onClick={() => handleSelectProject(proj)}
                   className={`flex items-center justify-between p-2 rounded-xl cursor-pointer text-xs transition-colors ${
                     activeProject?.id === proj.id
-                      ? 'bg-[#262522] text-[#ECEBE7] font-medium'
-                      : 'hover:bg-[#23221F] text-[#B4B3AD] hover:text-[#ECEBE7]'
+                      ? 'bg-claude-input text-claude-text-primary font-medium'
+                      : 'hover:bg-claude-surface text-claude-text-secondary hover:text-claude-text-primary'
                   }`}
                 >
                   <span className="truncate">{proj.name}</span>
@@ -195,7 +195,7 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
         )}
       </div>
 
-      <div className="border-t border-[#2A2926] my-1" />
+      <div className="border-t border-claude-border my-1" />
 
       {/* 4. Skills (with submenu) */}
       <div
@@ -205,23 +205,23 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
       >
         <div
           onClick={() => setActiveSubmenu(activeSubmenu === 'skills' ? null : 'skills')}
-          className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-[#23221F] cursor-pointer transition-colors group"
+          className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-claude-surface cursor-pointer transition-colors group"
         >
           <div className="flex items-center gap-2.5">
-            <Bookmark className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+            <Bookmark className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
             <span>Skills</span>
           </div>
-          <ChevronRight className="w-3.5 h-3.5 text-[#8C8A82]" />
+          <ChevronRight className="w-3.5 h-3.5 text-claude-text-secondary" />
         </div>
 
         {/* Skills Submenu */}
         {activeSubmenu === 'skills' && (
           <div
-            className={`absolute w-56 bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in duration-150 space-y-0.5 ${
+            className={`absolute w-56 bg-claude-card border border-claude-border rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in duration-150 space-y-0.5 ${
               placement === 'bottom' ? 'top-0' : 'bottom-0'
             } ${submenuSide === 'left' ? 'right-full mr-2' : 'left-full ml-2'}`}
           >
-            <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#7E7C76]">
+            <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-claude-text-muted">
               Active Skills
             </div>
             {[
@@ -232,7 +232,7 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
             ].map((skill, i) => (
               <div
                 key={i}
-                className="flex items-center justify-between p-2 rounded-xl hover:bg-[#23221F] text-xs text-[#ECEBE7]"
+                className="flex items-center justify-between p-2 rounded-xl hover:bg-claude-surface text-xs text-claude-text-primary"
               >
                 <span>{skill.label}</span>
                 <Check className="w-3.5 h-3.5 text-sky-400" />
@@ -250,23 +250,23 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
       >
         <div
           onClick={() => setActiveSubmenu(activeSubmenu === 'connector' ? null : 'connector')}
-          className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-[#23221F] cursor-pointer transition-colors group"
+          className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-claude-surface cursor-pointer transition-colors group"
         >
           <div className="flex items-center gap-2.5">
-            <Puzzle className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+            <Puzzle className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
             <span>Add connector</span>
           </div>
-          <ChevronRight className="w-3.5 h-3.5 text-[#8C8A82]" />
+          <ChevronRight className="w-3.5 h-3.5 text-claude-text-secondary" />
         </div>
 
         {/* Connector Submenu */}
         {activeSubmenu === 'connector' && (
           <div
-            className={`absolute w-52 bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in duration-150 space-y-0.5 ${
+            className={`absolute w-52 bg-claude-card border border-claude-border rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in duration-150 space-y-0.5 ${
               placement === 'bottom' ? 'top-0' : 'bottom-0'
             } ${submenuSide === 'left' ? 'right-full mr-2' : 'left-full ml-2'}`}
           >
-            <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#7E7C76]">
+            <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-claude-text-muted">
               Available Connectors
             </div>
             {['GitHub Repo', 'Google Drive', 'Notion Workspace', 'Figma Files', 'Slack Channels'].map((c, i) => (
@@ -276,10 +276,10 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
                   alert(`Connecting to ${c}...`);
                   onClose();
                 }}
-                className="flex items-center justify-between p-2 rounded-xl hover:bg-[#23221F] cursor-pointer text-xs text-[#B4B3AD] hover:text-[#ECEBE7]"
+                className="flex items-center justify-between p-2 rounded-xl hover:bg-claude-surface cursor-pointer text-xs text-claude-text-secondary hover:text-claude-text-primary"
               >
                 <span>{c}</span>
-                <Plus className="w-3 h-3 text-[#7E7C76]" />
+                <Plus className="w-3 h-3 text-claude-text-muted" />
               </div>
             ))}
           </div>
@@ -293,22 +293,22 @@ export const AddContentDropdown: React.FC<AddContentDropdownProps> = ({
           setIsSettingsOpen(true);
           onClose();
         }}
-        className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+        className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
       >
-        <Sparkles className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+        <Sparkles className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
         <span>Add plugins...</span>
       </button>
 
-      <div className="border-t border-[#2A2926] my-1" />
+      <div className="border-t border-claude-border my-1" />
 
       {/* 7. Web search (toggleable with blue checkmark matching screenshot 1) */}
       <button
         type="button"
         onClick={() => setIsWebSearchEnabled(!isWebSearchEnabled)}
-        className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+        className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
       >
         <div className="flex items-center gap-2.5">
-          <Globe className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+          <Globe className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
           <span>Web search</span>
         </div>
         {isWebSearchEnabled && (

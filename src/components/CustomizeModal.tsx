@@ -139,11 +139,11 @@ export const CustomizeModal: React.FC = () => {
       case 'reflect':
         return (
           <div className="space-y-4 max-w-xl">
-            <h3 className="text-sm font-semibold text-[#ECEBE7]">Reflect</h3>
-            <p className="text-xs text-[#8C8A82] leading-relaxed">
+            <h3 className="text-sm font-semibold text-claude-text-primary">Reflect</h3>
+            <p className="text-xs text-claude-text-secondary leading-relaxed">
               Reflect allows Claude to review previous conversations to provide personalized contextual continuity.
             </p>
-            <div className="p-4 rounded-xl bg-[#1C1B19] border border-[#2B2A27] text-xs text-[#B4B3AD]">
+            <div className="p-4 rounded-xl bg-claude-card border border-claude-border text-xs text-claude-text-secondary">
               Personalized reflection enabled across your active chats.
             </div>
           </div>
@@ -166,29 +166,29 @@ export const CustomizeModal: React.FC = () => {
       aria-label="Settings"
     >
       <div
-        className="w-full max-w-4xl h-[680px] max-h-[90vh] bg-[#141413] border border-[#262522] rounded-2xl shadow-2xl flex flex-col overflow-hidden select-none duration-75"
+        className="w-full max-w-4xl h-[680px] max-h-[90vh] bg-claude-bg border border-claude-border-subtle rounded-2xl shadow-2xl flex flex-col overflow-hidden select-none duration-75"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="h-14 border-b border-[#22211F] px-6 flex items-center justify-between bg-[#161514] shrink-0">
+        <div className="h-14 border-b border-claude-border-subtle px-6 flex items-center justify-between bg-claude-bg shrink-0">
           <div className="flex items-center gap-3 w-80">
             <div className="relative w-full">
-              <Search className="w-3.5 h-3.5 text-[#7E7C76] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-claude-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search settings..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[#1C1B19] text-xs text-[#ECEBE7] placeholder-[#706E68] pl-8 pr-3 py-1.5 rounded-xl border border-[#2B2A27] focus:outline-none focus:border-[#DA7756]"
+                className="w-full bg-claude-card text-xs text-claude-text-primary placeholder-claude-text-muted pl-8 pr-3 py-1.5 rounded-xl border border-claude-border focus:outline-none focus:border-[#DA7756]"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-[#706E68] hidden sm:inline">Esc to close</span>
+            <span className="text-[11px] text-claude-text-muted hidden sm:inline">Esc to close</span>
             <button
               onClick={() => setIsSettingsOpen(false)}
-              className="p-1.5 rounded-xl text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#22211F] transition-colors"
+              className="p-1.5 rounded-xl text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
               title="Close Settings"
               aria-label="Close settings"
             >
@@ -201,12 +201,12 @@ export const CustomizeModal: React.FC = () => {
         <div className="flex-1 flex min-h-0">
           {/* Left Navigation */}
           <nav
-            className="w-52 shrink-0 bg-[#161514] border-r border-[#22211F] p-2.5 flex flex-col justify-between overflow-y-auto"
+            className="w-52 shrink-0 bg-claude-bg border-r border-claude-border-subtle p-2.5 flex flex-col justify-between overflow-y-auto"
             aria-label="Settings navigation"
           >
             {searchQuery.trim() ? (
               <div className="space-y-1">
-                <div className="text-[10px] font-semibold text-[#706E68] uppercase px-2.5 py-1">
+                <div className="text-[10px] font-semibold text-claude-text-muted uppercase px-2.5 py-1">
                   Search Results ({searchResults.length})
                 </div>
                 {searchResults.map((res, i) => (
@@ -216,14 +216,14 @@ export const CustomizeModal: React.FC = () => {
                       setActiveTab(res.tab);
                       setSearchQuery('');
                     }}
-                    className="w-full text-left p-2 rounded-xl hover:bg-[#201F1D] text-xs transition-colors"
+                    className="w-full text-left p-2 rounded-xl hover:bg-claude-surface text-xs transition-colors"
                   >
-                    <div className="font-medium text-[#ECEBE7] truncate">{res.title}</div>
-                    <div className="text-[10px] text-[#7E7C76] truncate">{res.category}</div>
+                    <div className="font-medium text-claude-text-primary truncate">{res.title}</div>
+                    <div className="text-[10px] text-claude-text-muted truncate">{res.category}</div>
                   </button>
                 ))}
                 {searchResults.length === 0 && (
-                  <div className="p-4 text-center text-xs text-[#706E68]">
+                  <div className="p-4 text-center text-xs text-claude-text-muted">
                     No settings matching "{searchQuery}"
                   </div>
                 )}
@@ -231,7 +231,7 @@ export const CustomizeModal: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <div className="text-[10px] font-semibold text-[#706E68] uppercase px-2.5 py-1 tracking-wider">
+                  <div className="text-[10px] font-semibold text-claude-text-muted uppercase px-2.5 py-1 tracking-wider">
                     Settings
                   </div>
                   <div className="space-y-0.5 mt-1">
@@ -244,12 +244,12 @@ export const CustomizeModal: React.FC = () => {
                           onClick={() => setActiveTab(tab.id)}
                           className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs transition-all text-left ${
                             isActive
-                              ? 'bg-[#262522] text-[#ECEBE7] font-medium shadow-sm'
-                              : 'text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#1E1D1B]'
+                              ? 'bg-claude-input text-claude-text-primary font-medium shadow-sm'
+                              : 'text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-card'
                           }`}
                           aria-current={isActive ? 'page' : undefined}
                         >
-                          <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#DA7756]' : 'text-[#7E7C76]'}`} />
+                          <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#DA7756]' : 'text-claude-text-muted'}`} />
                           <span>{tab.label}</span>
                         </button>
                       );
@@ -260,22 +260,22 @@ export const CustomizeModal: React.FC = () => {
             )}
 
             {/* Bottom Customize Navigation Button (matching Image 2) */}
-            <div className="pt-2 mt-auto border-t border-[#201F1D]">
+            <div className="pt-2 mt-auto border-t border-claude-border-subtle">
               <button
                 onClick={() => {
                   setIsSettingsOpen(false);
                   setActivePageView('customize');
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#1E1D1B] transition-all text-left group"
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-card transition-all text-left group"
               >
-                <ClaudeCustomizeIcon size={14} color="#7E7C76" className="group-hover:text-[#DA7756] transition-colors" />
-                <span className="font-normal text-[#B4B3AD] group-hover:text-[#ECEBE7]">Customize</span>
+                <ClaudeCustomizeIcon size={14} color="currentColor" className="group-hover:text-[#DA7756] transition-colors" />
+                <span className="font-normal text-claude-text-secondary group-hover:text-claude-text-primary">Customize</span>
               </button>
             </div>
           </nav>
 
           {/* Right Content Pane */}
-          <div className="flex-1 p-6 sm:p-8 overflow-y-auto bg-[#141413]">
+          <div className="flex-1 p-6 sm:p-8 overflow-y-auto bg-claude-bg">
             {renderActiveTab()}
           </div>
         </div>

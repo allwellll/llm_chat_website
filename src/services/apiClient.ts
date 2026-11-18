@@ -1,4 +1,6 @@
 import { Message, ModelProfileId } from '../types';
+import { loadSettings } from './storage';
+import { selectedRequestChannel } from './channels';
 
 export interface StreamCallbacks {
   onTextChunk: (text: string) => void;
@@ -33,13 +35,16 @@ export class ChatApiClient {
         }))
       }));
 
-      const response = await fetch('/api/chat', {
+      const channel = await selectedRequestChannel(profile);
+      const response = await fetch(`${import.meta.env.BASE_URL}api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           profile,
+          channel,
+          webSearch: loadSettings().webSearch === true,
           messages: formattedMessages,
           systemPrompt,
           modelOverride: modelOverride || undefined
@@ -62,6 +67,7 @@ export class ChatApiClient {
 
       let currentEvent = 'text';
       let hasError = false;
+      let hasDone = false;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -92,7 +98,7 @@ export class ChatApiClient {
                 hasError = true;
                 callbacks.onError(new Error(data.error || 'Unknown error from server'));
               } else if (currentEvent === 'done') {
-                if (!hasError) callbacks.onDone();
+                if (!hasError && !hasDone) { hasDone = true; callbacks.onDone(); }
               }
             } catch (e) {
               console.warn('Failed to parse SSE data:', dataStr);
@@ -102,7 +108,7 @@ export class ChatApiClient {
         }
       }
 
-      if (!hasError) {
+      if (!hasError && !hasDone) {
         callbacks.onDone();
       }
     } catch (err: any) {

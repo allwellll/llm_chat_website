@@ -42,6 +42,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
   const { user, logout } = useAuth();
   const {
     conversations,
+    historyHasMore,
+    loadMoreHistory,
     activeConversationId,
     activePageView,
     setActivePageView,
@@ -86,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
 
   // Standalone conversations (not belonging to any project)
   const standaloneConversations = conversations.filter((c) =>
-    !c.projectId && c.title.toLowerCase().includes(searchQuery.toLowerCase())
+    (!c.projectId || !projects.some(p => p.id === c.projectId)) && c.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSelectConversation = (id: string) => {
@@ -138,10 +140,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
 
       {/* Sidebar Container */}
       <aside
+        id="conversation-sidebar"
         ref={sidebarRef}
         role="navigation"
         aria-label="Main navigation"
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col w-[270px] bg-[#141413] border-r border-[#1f1e1c] transition-transform duration-200 ease-in-out select-none ${
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col w-[270px] bg-claude-sidebar border-r border-claude-border-subtle transition-transform duration-200 ease-in-out select-none ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } md:static md:shrink-0 ${isOpen ? 'md:translate-x-0' : 'md:-translate-x-full md:w-0 md:border-0 md:overflow-hidden'}`}
       >
@@ -149,7 +152,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
         <div className="flex items-center justify-between px-4 pt-4 pb-2.5">
           <button
             onClick={handleNewChatClick}
-            className="font-serif text-[23px] font-medium text-[#ECEBE7] hover:text-white tracking-tight text-left cursor-pointer transition-colors focus:outline-none"
+            className="font-serif text-[23px] font-medium text-claude-text-primary hover:text-claude-text-primary tracking-tight text-left cursor-pointer transition-colors focus:outline-none"
             aria-label="New chat"
             title="Start new chat"
           >
@@ -157,7 +160,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
           </button>
           <button
             onClick={onToggle}
-            className="p-1.5 rounded-lg text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#201f1d] transition-colors"
+            className="p-1.5 rounded-lg text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
             aria-label="Close sidebar"
           >
             <PanelLeftClose className="w-4 h-4 stroke-[2]" />
@@ -170,8 +173,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
             onClick={handleNewChatClick}
             className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-[14.5px] font-normal transition-all group ${
               activePageView === 'chat' && !activeConversationId
-                ? 'bg-[#282724] text-[#FFFFFF] font-medium'
-                : 'text-[#E2E1DD] hover:bg-[#1E1D1B] hover:text-[#FFFFFF]'
+                ? 'bg-claude-input text-claude-text-primary font-medium'
+                : 'text-claude-text-primary hover:bg-claude-card hover:text-claude-text-primary'
             }`}
             aria-label="Start new conversation"
           >
@@ -186,8 +189,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
             onClick={() => handleNavClick('projects')}
             className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-colors ${
               activePageView === 'projects'
-                ? 'bg-[#282724] text-[#FFFFFF] font-medium'
-                : 'text-[#E2E1DD] hover:text-[#FFFFFF] hover:bg-[#1E1D1B]'
+                ? 'bg-claude-input text-claude-text-primary font-medium'
+                : 'text-claude-text-primary hover:text-claude-text-primary hover:bg-claude-card'
             }`}
             aria-current={activePageView === 'projects' ? 'page' : undefined}
           >
@@ -204,8 +207,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
             onClick={() => handleNavClick('artifacts')}
             className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-colors ${
               activePageView === 'artifacts'
-                ? 'bg-[#282724] text-[#FFFFFF] font-medium'
-                : 'text-[#E2E1DD] hover:text-[#FFFFFF] hover:bg-[#1E1D1B]'
+                ? 'bg-claude-input text-claude-text-primary font-medium'
+                : 'text-claude-text-primary hover:text-claude-text-primary hover:bg-claude-card'
             }`}
             aria-current={activePageView === 'artifacts' ? 'page' : undefined}
           >
@@ -222,8 +225,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
             onClick={() => handleNavClick('code')}
             className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-colors ${
               activePageView === 'code'
-                ? 'bg-[#282724] text-[#FFFFFF] font-medium'
-                : 'text-[#E2E1DD] hover:text-[#FFFFFF] hover:bg-[#1E1D1B]'
+                ? 'bg-claude-input text-claude-text-primary font-medium'
+                : 'text-claude-text-primary hover:text-claude-text-primary hover:bg-claude-card'
             }`}
             aria-current={activePageView === 'code' ? 'page' : undefined}
           >
@@ -240,8 +243,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
             onClick={() => handleNavClick('customize')}
             className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl transition-colors ${
               activePageView === 'customize'
-                ? 'bg-[#282724] text-[#FFFFFF] font-medium'
-                : 'text-[#E2E1DD] hover:text-[#FFFFFF] hover:bg-[#1E1D1B]'
+                ? 'bg-claude-input text-claude-text-primary font-medium'
+                : 'text-claude-text-primary hover:text-claude-text-primary hover:bg-claude-card'
             }`}
             aria-current={activePageView === 'customize' ? 'page' : undefined}
           >
@@ -253,21 +256,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
               <span>Customize</span>
             </div>
           </button>
-        </nav>
+        <div className="px-3 py-2">{historyHasMore && <button onClick={() => {void loadMoreHistory();}} className="text-xs underline">加载更多历史</button>}</div></nav>
 
         {/* ─── Dynamic Projects Section (matching reference images) ─── */}
         {projects && projects.length > 0 && (
           <div className="px-3 mb-2.5">
-            <div className="flex items-center justify-between px-1.5 py-1 text-xs text-[#8C8A82]">
+            <div className="flex items-center justify-between px-1.5 py-1 text-xs text-claude-text-secondary">
               <button
                 onClick={() => setIsProjectsExpanded(!isProjectsExpanded)}
-                className="flex items-center gap-1.5 font-medium text-[13px] text-[#8C8A82] hover:text-[#ECEBE7] transition-colors select-none"
+                className="flex items-center gap-1.5 font-medium text-[13px] text-claude-text-secondary hover:text-claude-text-primary transition-colors select-none"
               >
                 <span>Projects</span>
                 {isProjectsExpanded ? (
-                  <ChevronDown className="w-3.5 h-3.5 text-[#8C8A82]" />
+                  <ChevronDown className="w-3.5 h-3.5 text-claude-text-secondary" />
                 ) : (
-                  <ChevronRight className="w-3.5 h-3.5 text-[#8C8A82]" />
+                  <ChevronRight className="w-3.5 h-3.5 text-claude-text-secondary" />
                 )}
               </button>
 
@@ -278,7 +281,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                       setActiveProject(null);
                       setActivePageView('projects');
                     }}
-                    className="p-1 rounded hover:text-[#ECEBE7] text-[#8C8A82] transition-colors"
+                    className="p-1 rounded hover:text-claude-text-primary text-claude-text-secondary transition-colors"
                     title="View all projects"
                   >
                     <ArrowUpRight className="w-3.5 h-3.5 stroke-[2]" />
@@ -289,7 +292,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                     setActiveProject(null);
                     setActivePageView('projects');
                   }}
-                  className="p-1 rounded hover:text-[#ECEBE7] text-[#8C8A82] transition-colors"
+                  className="p-1 rounded hover:text-claude-text-primary text-claude-text-secondary transition-colors"
                   title="Create or view projects"
                 >
                   <Plus className="w-4 h-4 stroke-[2.2]" />
@@ -312,8 +315,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                         }}
                         className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[14px] text-left transition-colors ${
                           isProjActive
-                            ? 'bg-[#282724] text-[#FFFFFF] font-medium'
-                            : 'text-[#E2E1DD] hover:bg-[#1E1D1B] hover:text-[#FFFFFF]'
+                            ? 'bg-claude-input text-claude-text-primary font-medium'
+                            : 'text-claude-text-primary hover:bg-claude-card hover:text-claude-text-primary'
                         }`}
                       >
                         <ClaudeProjectsIcon size={16} color="#A5A39C" className="shrink-0" />
@@ -322,7 +325,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
 
                       {/* Nested Project Chats Tree */}
                       {projectChats.length > 0 && (
-                        <div className="ml-4 pl-3.5 border-l border-[#2B2A27] space-y-0.5 py-0.5">
+                        <div className="ml-4 pl-3.5 border-l border-claude-border space-y-0.5 py-0.5">
                           {projectChats.map((chat) => {
                             const isChatActive = activePageView === 'chat' && chat.id === activeConversationId;
                             const isContextOpen = contextMenuChatId === chat.id;
@@ -333,15 +336,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                                 onClick={() => handleSelectConversation(chat.id)}
                                 className={`group relative flex items-center justify-between py-1.5 px-2 rounded-lg text-[13.5px] transition-colors cursor-pointer ${
                                   isChatActive
-                                    ? 'text-[#FFFFFF] font-medium bg-[#282724]'
-                                    : 'text-[#C4C3BE] hover:text-[#FFFFFF] hover:bg-[#1E1D1B]'
+                                    ? 'text-claude-text-primary font-medium bg-claude-input'
+                                    : 'text-claude-text-primary hover:text-claude-text-primary hover:bg-claude-card'
                                 }`}
                               >
                                 <div className="flex items-center gap-2.5 overflow-hidden mr-2 min-w-0">
                                   <span className={`w-2 h-2 rounded-full border-[1.6px] shrink-0 transition-colors ${
                                     isChatActive
-                                      ? 'border-[#B4B3AD] bg-[#B4B3AD]/40'
-                                      : 'border-[#5E5C56]'
+                                      ? 'border-claude-border bg-claude-card-hover/40'
+                                      : 'border-claude-border'
                                   }`} />
                                   <span className="truncate">{chat.title}</span>
                                 </div>
@@ -352,7 +355,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                                       e.stopPropagation();
                                       setContextMenuChatId(isContextOpen ? null : chat.id);
                                     }}
-                                    className="p-1 rounded text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#2D2C28]"
+                                    className="p-1 rounded text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-card-hover"
                                     aria-label="More actions"
                                   >
                                     <MoreHorizontal className="w-3.5 h-3.5" />
@@ -362,7 +365,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                                 {isContextOpen && (
                                   <div
                                     ref={contextMenuRef}
-                                    className="absolute right-2 top-8 w-36 bg-[#1C1B19] border border-[#2E2D2A] rounded-xl shadow-2xl p-1 z-50 text-xs"
+                                    className="absolute right-2 top-8 w-36 bg-claude-card border border-claude-border rounded-xl shadow-2xl p-1 z-50 text-xs"
                                     onClick={(e) => e.stopPropagation()}
                                     role="menu"
                                   >
@@ -372,21 +375,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                                         toggleStarConversation(chat.id);
                                         setContextMenuChatId(null);
                                       }}
-                                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#23221F] text-left text-[#ECEBE7]"
+                                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-claude-surface text-left text-claude-text-primary"
                                       role="menuitem"
                                     >
-                                      <Star className={`w-3.5 h-3.5 ${chat.isStarred ? 'text-[#DA7756] fill-[#DA7756]' : 'text-[#8C8A82]'}`} />
+                                      <Star className={`w-3.5 h-3.5 ${chat.isStarred ? 'text-[#DA7756] fill-[#DA7756]' : 'text-claude-text-secondary'}`} />
                                       <span>{chat.isStarred ? 'Unstar' : 'Star'}</span>
                                     </button>
                                     <button
                                       onClick={(e) => startEditing(chat, e)}
-                                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#23221F] text-left text-[#ECEBE7]"
+                                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-claude-surface text-left text-claude-text-primary"
                                       role="menuitem"
                                     >
-                                      <Edit2 className="w-3.5 h-3.5 text-[#8C8A82]" />
+                                      <Edit2 className="w-3.5 h-3.5 text-claude-text-secondary" />
                                       <span>Rename</span>
                                     </button>
-                                    <div className="my-0.5 border-t border-[#262522]" />
+                                    <div className="my-0.5 border-t border-claude-border-subtle" />
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
@@ -416,19 +419,19 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
 
         {/* ─── Chats and Tasks Header (matching reference images) ─── */}
         <div className="px-4 mb-1">
-          <div className="flex items-center justify-between py-1.5 text-xs text-[#8C8A82]">
+          <div className="flex items-center justify-between py-1.5 text-xs text-claude-text-secondary">
             <button
               onClick={() => setIsChatsExpanded(!isChatsExpanded)}
-              className="flex items-center gap-1.5 font-medium text-[13px] text-[#8C8A82] hover:text-[#ECEBE7] transition-colors select-none"
+              className="flex items-center gap-1.5 font-medium text-[13px] text-claude-text-secondary hover:text-claude-text-primary transition-colors select-none"
             >
               <span>Chats and tasks</span>
               {!isChatsExpanded && (
-                <ChevronRight className="w-3.5 h-3.5 text-[#8C8A82]" />
+                <ChevronRight className="w-3.5 h-3.5 text-claude-text-secondary" />
               )}
             </button>
             <button
               onClick={onOpenSearch}
-              className="p-1 rounded hover:text-[#ECEBE7] text-[#8C8A82] transition-colors"
+              className="p-1 rounded hover:text-claude-text-primary text-claude-text-secondary transition-colors"
               title="Filter / Search (Ctrl+K)"
               aria-label="Filter chats"
             >
@@ -441,9 +444,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
         {isChatsExpanded && (
           <div className="flex-1 overflow-y-auto px-2.5 pb-2 space-y-0.5 animate-in fade-in duration-100" role="list" aria-label="Conversation history">
             {standaloneConversations.length === 0 && (
-              <div className="px-3 py-6 text-center text-xs text-[#8C8A82]">
+              <div className="px-3 py-6 text-center text-xs text-claude-text-secondary">
                 {searchQuery ? `No results for "${searchQuery}"` : 'No conversations yet'}
               </div>
+
             )}
 
             {standaloneConversations.map((chat) => {
@@ -458,8 +462,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                   onClick={() => handleSelectConversation(chat.id)}
                   className={`group relative flex items-center justify-between px-3 py-2 rounded-xl text-[14.5px] leading-normal cursor-pointer transition-colors ${
                     isActive
-                      ? 'bg-[#252422] text-[#FFFFFF] font-normal'
-                      : 'text-[#E2E1DD] hover:bg-[#1C1B19] hover:text-[#FFFFFF]'
+                      ? 'bg-claude-input text-claude-text-primary font-normal'
+                      : 'text-claude-text-primary hover:bg-claude-card hover:text-claude-text-primary'
                   }`}
                   aria-selected={isActive}
                   aria-label={`Conversation: ${chat.title}`}
@@ -475,16 +479,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
                         autoFocus
-                        className="w-full bg-[#191816] text-sm text-[#ECEBE7] px-2.5 py-1 rounded-lg border border-[#DA7756] focus:outline-none"
+                        className="w-full bg-claude-bg text-sm text-claude-text-primary px-2.5 py-1 rounded-lg border border-[#DA7756] focus:outline-none"
                         aria-label="Rename conversation"
                         onKeyDown={(e) => {
                           if (e.key === 'Escape') setEditingChatId(null);
                         }}
                       />
-                      <button type="submit" className="p-1 hover:text-[#DA7756] text-[#A5A39C]" aria-label="Save">
+                      <button type="submit" className="p-1 hover:text-[#DA7756] text-claude-text-secondary" aria-label="Save">
                         <Check className="w-3.5 h-3.5" />
                       </button>
-                      <button type="button" onClick={() => setEditingChatId(null)} className="p-1 text-[#8C8A82]" aria-label="Cancel">
+                      <button type="button" onClick={() => setEditingChatId(null)} className="p-1 text-claude-text-secondary" aria-label="Cancel">
                         <X className="w-3.5 h-3.5" />
                       </button>
                     </form>
@@ -494,8 +498,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                         {/* Bullet Circle (matching Claude) */}
                         <span className={`w-2 h-2 rounded-full border-[1.5px] shrink-0 transition-colors ${
                           isActive
-                            ? 'border-[#B4B3AD] bg-[#B4B3AD]/40'
-                            : 'border-[#5E5C56]'
+                            ? 'border-claude-border bg-claude-card-hover/40'
+                            : 'border-claude-border'
                         }`} />
                         <span className="truncate">{chat.title}</span>
                       </div>
@@ -506,7 +510,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                             e.stopPropagation();
                             setContextMenuChatId(isContextOpen ? null : chat.id);
                           }}
-                          className="p-1 rounded text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#2D2C28]"
+                          className="p-1 rounded text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-card-hover"
                           aria-label="More actions"
                           aria-haspopup="true"
                           aria-expanded={isContextOpen}
@@ -519,7 +523,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                       {isContextOpen && (
                         <div
                           ref={contextMenuRef}
-                          className="absolute right-2 top-8 w-36 bg-[#1C1B19] border border-[#2E2D2A] rounded-xl shadow-2xl p-1 z-50 text-xs"
+                          className="absolute right-2 top-8 w-36 bg-claude-card border border-claude-border rounded-xl shadow-2xl p-1 z-50 text-xs"
                           onClick={(e) => e.stopPropagation()}
                           role="menu"
                         >
@@ -529,21 +533,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                               toggleStarConversation(chat.id);
                               setContextMenuChatId(null);
                             }}
-                            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#23221F] text-left text-[#ECEBE7]"
+                            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-claude-surface text-left text-claude-text-primary"
                             role="menuitem"
                           >
-                            <Star className={`w-3.5 h-3.5 ${chat.isStarred ? 'text-[#DA7756] fill-[#DA7756]' : 'text-[#8C8A82]'}`} />
+                            <Star className={`w-3.5 h-3.5 ${chat.isStarred ? 'text-[#DA7756] fill-[#DA7756]' : 'text-claude-text-secondary'}`} />
                             <span>{chat.isStarred ? 'Unstar' : 'Star'}</span>
                           </button>
                           <button
                             onClick={(e) => startEditing(chat, e)}
-                            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#23221F] text-left text-[#ECEBE7]"
+                            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-claude-surface text-left text-claude-text-primary"
                             role="menuitem"
                           >
-                            <Edit2 className="w-3.5 h-3.5 text-[#8C8A82]" />
+                            <Edit2 className="w-3.5 h-3.5 text-claude-text-secondary" />
                             <span>Rename</span>
                           </button>
-                          <div className="my-0.5 border-t border-[#262522]" />
+                          <div className="my-0.5 border-t border-claude-border-subtle" />
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -567,12 +571,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
         )}
 
         {/* ─── Bottom Account Area (matching Image 1) ─── */}
-        <div className="mt-auto border-t border-[#1F1E1C] p-2 space-y-1 relative" ref={profileMenuRef}>
+        <div className="mt-auto border-t border-claude-border-subtle p-2 space-y-1 relative" ref={profileMenuRef}>
           
           {/* Workspace indicator */}
-          <div className="flex items-center gap-3 px-3 py-2 rounded-xl text-[14px] text-[#ECEBE7] hover:bg-[#1E1D1B] hover:text-[#FFFFFF] cursor-pointer transition-colors">
-            <Palette className="w-3.5 h-3.5 text-[#ECEBE7] stroke-[1.6]" />
-            <span className="font-normal text-[14px] text-[#ECEBE7]">Design</span>
+          <div className="flex items-center gap-3 px-3 py-2 rounded-xl text-[14px] text-claude-text-primary hover:bg-claude-card hover:text-claude-text-primary cursor-pointer transition-colors">
+            <Palette className="w-3.5 h-3.5 text-claude-text-primary stroke-[1.6]" />
+            <span className="font-normal text-[14px] text-claude-text-primary">Design</span>
           </div>
 
           {/* User Profile Pill (matching Image 1) */}
@@ -581,8 +585,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all cursor-pointer border ${
                 isProfileMenuOpen
-                  ? 'bg-[#22211F] border-[#34332F]'
-                  : 'bg-[#181816] hover:bg-[#201F1D] border-transparent hover:border-[#282725]'
+                  ? 'bg-claude-surface border-claude-border'
+                  : 'bg-claude-bg hover:bg-claude-surface border-transparent hover:border-claude-border-subtle'
               }`}
               role="button"
               aria-haspopup="true"
@@ -590,36 +594,36 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
               aria-label="Account menu"
             >
               <div className="flex items-center gap-2.5">
-                <div className="w-6 h-6 rounded-full bg-[#2B2A27] border border-[#3A3935] text-[#ECEBE7] flex items-center justify-center font-bold text-xs">
+                <div className="w-6 h-6 rounded-full bg-claude-card-hover border border-claude-border text-claude-text-primary flex items-center justify-center font-bold text-xs">
                   {user?.name ? user.name.charAt(0).toUpperCase() : settings.userName ? settings.userName.charAt(0).toUpperCase() : 'N'}
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="font-normal text-[13.5px] text-[#ECEBE7]">{user?.name || settings.userName || 'Norbu'}</span>
-                  <span className="text-xs text-[#8C8A82]">
+                  <span className="font-normal text-[13.5px] text-claude-text-primary">{user?.name || settings.userName || 'Norbu'}</span>
+                  <span className="text-xs text-claude-text-secondary">
                     · {user?.plan ? (user.plan.charAt(0).toUpperCase() + user.plan.slice(1)) : 'Pro'}
                   </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#8C8A82]" />
+                  <ChevronDown className="w-3.5 h-3.5 text-claude-text-secondary" />
                 </div>
               </div>
 
               {/* Utility Icons (matching Image 1: Download with dot, Search, Collapse) */}
-              <div className="flex items-center gap-2 text-[#8C8A82]" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-2 text-claude-text-secondary" onClick={(e) => e.stopPropagation()}>
                 {/* Download / Updates Icon with Blue Dot */}
                 <div className="relative">
                   <button
                     onClick={() => setIsSettingsOpen(true)}
-                    className="p-1 rounded hover:bg-[#282724] hover:text-[#ECEBE7] transition-colors"
+                    className="p-1 rounded hover:bg-claude-input hover:text-claude-text-primary transition-colors"
                     title="Updates & Downloads"
                   >
                     <Download className="w-4 h-4 stroke-[2]" />
                   </button>
-                  <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-sky-500 ring-2 ring-[#181816]" />
+                  <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-sky-500 ring-2 ring-claude-border-subtle" />
                 </div>
 
                 {/* Search Icon */}
                 <button
                   onClick={onOpenSearch}
-                  className="p-1 rounded hover:bg-[#282724] hover:text-[#ECEBE7] transition-colors"
+                  className="p-1 rounded hover:bg-claude-input hover:text-claude-text-primary transition-colors"
                   title="Search chats (Ctrl+K)"
                   aria-label="Search"
                 >
@@ -629,7 +633,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                 {/* Sidebar Collapse Icon */}
                 <button
                   onClick={onToggle}
-                  className="p-1 rounded hover:bg-[#282724] hover:text-[#ECEBE7] transition-colors"
+                  className="p-1 rounded hover:bg-claude-input hover:text-claude-text-primary transition-colors"
                   title="Collapse sidebar"
                   aria-label="Collapse sidebar"
                 >
@@ -641,11 +645,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
             {/* Profile Dropdown Menu */}
             {isProfileMenuOpen && (
               <div
-                className="absolute bottom-full left-0 w-64 mb-2 bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-1.5 z-50 select-none text-xs text-[#ECEBE7]"
+                className="absolute bottom-full left-0 w-64 mb-2 bg-claude-card border border-claude-border rounded-2xl shadow-2xl p-1.5 z-50 select-none text-xs text-claude-text-primary"
                 role="menu"
                 aria-label="Account menu"
               >
-                <div className="px-3.5 py-2 text-[11px] text-[#8C8A82] border-b border-[#262522] truncate">
+                <div className="px-3.5 py-2 text-[11px] text-claude-text-secondary border-b border-claude-border-subtle truncate">
                   {user?.email || settings.userEmail || 'norbu@claude.ai'}
                 </div>
 
@@ -655,26 +659,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                       setIsProfileMenuOpen(false);
                       setIsSettingsOpen(true);
                     }}
-                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
                     role="menuitem"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Settings className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+                      <Settings className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
                       <span>Settings</span>
                     </div>
-                    <div className="flex items-center gap-1 text-[10px] text-[#7E7C76] font-mono">
-                      <span className="px-1.5 py-0.5 rounded bg-[#252422] border border-[#33312E]">Ctrl</span>
-                      <span className="px-1.5 py-0.5 rounded bg-[#252422] border border-[#33312E]">⇧</span>
-                      <span className="px-1.5 py-0.5 rounded bg-[#252422] border border-[#33312E]">,</span>
+                    <div className="flex items-center gap-1 text-[10px] text-claude-text-muted font-mono">
+                      <span className="px-1.5 py-0.5 rounded bg-claude-input border border-claude-border">Ctrl</span>
+                      <span className="px-1.5 py-0.5 rounded bg-claude-input border border-claude-border">⇧</span>
+                      <span className="px-1.5 py-0.5 rounded bg-claude-input border border-claude-border">,</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => setIsProfileMenuOpen(false)}
-                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
                     role="menuitem"
                   >
-                    <Globe className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+                    <Globe className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
                     <span>Language</span>
                   </button>
 
@@ -683,15 +687,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                       setIsProfileMenuOpen(false);
                       setIsSettingsOpen(true);
                     }}
-                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
                     role="menuitem"
                   >
-                    <HelpCircle className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+                    <HelpCircle className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
                     <span>Get help</span>
                   </button>
                 </div>
 
-                <div className="border-t border-[#262522] my-1" />
+                <div className="border-t border-claude-border-subtle my-1" />
 
                 <div className="space-y-0.5 my-1">
                   <button
@@ -699,10 +703,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                       setIsProfileMenuOpen(false);
                       setActivePageView('upgrade');
                     }}
-                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
                     role="menuitem"
                   >
-                    <ArrowUpCircle className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+                    <ArrowUpCircle className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
                     <span>Upgrade plan</span>
                   </button>
 
@@ -711,10 +715,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                       setIsProfileMenuOpen(false);
                       setIsSettingsOpen(true);
                     }}
-                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+                    className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
                     role="menuitem"
                   >
-                    <Download className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+                    <Download className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
                     <span>Apps & Extensions</span>
                   </button>
 
@@ -723,11 +727,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                       setIsProfileMenuOpen(false);
                       setActivePageView('projects');
                     }}
-                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-[#23221F] text-left transition-colors group"
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-claude-surface text-left transition-colors group"
                     role="menuitem"
                   >
                     <div className="flex items-center gap-2.5">
-                      <GraduationCap className="w-4 h-4 text-[#8C8A82] group-hover:text-[#ECEBE7]" />
+                      <GraduationCap className="w-4 h-4 text-claude-text-secondary group-hover:text-claude-text-primary" />
                       <span>Claude Academy</span>
                     </div>
                     <span className="text-[10px] font-semibold text-sky-400 bg-sky-950/60 border border-sky-800/60 px-1.5 py-0.5 rounded">
@@ -736,14 +740,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, onOpenSearch
                   </button>
                 </div>
 
-                <div className="border-t border-[#262522] my-1" />
+                <div className="border-t border-claude-border-subtle my-1" />
 
                 <button
                   onClick={() => {
                     setIsProfileMenuOpen(false);
                     logout();
                   }}
-                  className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-[#23221F] text-left text-[#A5A39C] hover:text-red-400 transition-colors group"
+                  className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-claude-surface text-left text-claude-text-secondary hover:text-red-400 transition-colors group"
                   role="menuitem"
                 >
                   <LogOut className="w-4 h-4 group-hover:text-red-400" />

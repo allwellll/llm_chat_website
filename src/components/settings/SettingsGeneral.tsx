@@ -12,47 +12,47 @@ export const SettingsGeneral: React.FC<SettingsTabProps> = ({ settings, updateSe
     <div className="space-y-8 max-w-xl">
       {/* ─── Profile Section (matching Image 2) ─── */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-[#ECEBE7]">Profile</h3>
+        <h3 className="text-sm font-semibold text-claude-text-primary">Profile</h3>
 
         {/* Avatar */}
         <div className="flex items-center justify-between py-1">
-          <span className="text-xs font-normal text-[#B4B3AD]">Avatar</span>
-          <div className="w-9 h-9 rounded-full bg-[#2B2A27] border border-[#3A3935] text-[#ECEBE7] flex items-center justify-center font-medium text-sm">
+          <span className="text-xs font-normal text-claude-text-secondary">Avatar</span>
+          <div className="w-9 h-9 rounded-full bg-claude-card-hover border border-claude-border text-claude-text-primary flex items-center justify-center font-medium text-sm">
             {settings.userName ? settings.userName.charAt(0).toUpperCase() : 'N'}
           </div>
         </div>
 
         {/* Full Name */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-normal text-[#B4B3AD]">Full name</label>
+          <label className="block text-xs font-normal text-claude-text-secondary">Full name</label>
           <input
             type="text"
             value={settings.fullName || settings.userName || 'Norbu'}
             onChange={(e) => updateSettings({ fullName: e.target.value })}
             placeholder="Norbu"
-            className="w-full bg-[#1C1B19] text-xs text-[#ECEBE7] px-3.5 py-2 rounded-xl border border-[#2B2A27] focus:outline-none focus:border-[#DA7756]"
+            className="w-full bg-claude-card text-xs text-claude-text-primary px-3.5 py-2 rounded-xl border border-claude-border focus:outline-none focus:border-[#DA7756]"
           />
         </div>
 
         {/* What should Claude call you? */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-normal text-[#B4B3AD]">What should Claude call you?</label>
+          <label className="block text-xs font-normal text-claude-text-secondary">What should Claude call you?</label>
           <input
             type="text"
             value={settings.userName || 'Norbu'}
             onChange={(e) => updateSettings({ userName: e.target.value })}
             placeholder="Norbu"
-            className="w-full bg-[#1C1B19] text-xs text-[#ECEBE7] px-3.5 py-2 rounded-xl border border-[#2B2A27] focus:outline-none focus:border-[#DA7756]"
+            className="w-full bg-claude-card text-xs text-claude-text-primary px-3.5 py-2 rounded-xl border border-claude-border focus:outline-none focus:border-[#DA7756]"
           />
         </div>
 
         {/* What best describes your work? */}
         <div className="space-y-1.5">
-          <label className="block text-xs font-normal text-[#B4B3AD]">What best describes your work?</label>
+          <label className="block text-xs font-normal text-claude-text-secondary">What best describes your work?</label>
           <select
             value={settings.userRole || 'developer'}
             onChange={(e) => updateSettings({ userRole: e.target.value })}
-            className="w-full bg-[#1C1B19] text-xs text-[#ECEBE7] px-3.5 py-2 rounded-xl border border-[#2B2A27] focus:outline-none focus:border-[#DA7756]"
+            className="w-full bg-claude-card text-xs text-claude-text-primary px-3.5 py-2 rounded-xl border border-claude-border focus:outline-none focus:border-[#DA7756]"
           >
             <option value="developer">Developer</option>
             <option value="designer">Designer</option>
@@ -65,8 +65,8 @@ export const SettingsGeneral: React.FC<SettingsTabProps> = ({ settings, updateSe
 
         {/* Instructions for Claude (matching Image 2) */}
         <div className="space-y-1.5 pt-1">
-          <label className="block text-xs font-normal text-[#B4B3AD]">Instructions for Claude</label>
-          <p className="text-[11px] text-[#8C8A82] leading-relaxed">
+          <label className="block text-xs font-normal text-claude-text-secondary">Instructions for Claude</label>
+          <p className="text-[11px] text-claude-text-secondary leading-relaxed">
             Claude will keep these in mind for this and any of your associated accounts across chats and Cowork within <span className="underline cursor-pointer">Anthropic's guidelines</span>. <span className="underline cursor-pointer">Learn more</span>
           </p>
           <textarea
@@ -74,21 +74,21 @@ export const SettingsGeneral: React.FC<SettingsTabProps> = ({ settings, updateSe
             value={settings.customInstructions || ''}
             onChange={(e) => updateSettings({ customInstructions: e.target.value })}
             placeholder="e.g. keep explanations brief and to the point"
-            className="w-full bg-[#1C1B19] text-xs text-[#ECEBE7] p-3 rounded-xl border border-[#2B2A27] focus:outline-none focus:border-[#DA7756] resize-none font-sans"
+            className="w-full bg-claude-card text-xs text-claude-text-primary p-3 rounded-xl border border-claude-border focus:outline-none focus:border-[#DA7756] resize-none font-sans"
           />
         </div>
       </div>
 
-      <div className="border-t border-[#22211F]" />
+      <div className="border-t border-claude-border-subtle" />
 
       {/* ─── Preferences Section (matching Image 2) ─── */}
       <div className="space-y-5">
-        <h3 className="text-sm font-semibold text-[#ECEBE7]">Preferences</h3>
+        <h3 className="text-sm font-semibold text-claude-text-primary">Preferences</h3>
 
         {/* Appearance 3-icon button */}
         <div className="flex items-center justify-between">
-          <label className="text-xs font-normal text-[#B4B3AD]">Appearance</label>
-          <div className="flex items-center p-1 rounded-xl bg-[#1C1B19] border border-[#2B2A27] gap-1">
+          <label className="text-xs font-normal text-claude-text-secondary">Appearance</label>
+          <div className="flex items-center p-1 rounded-xl bg-claude-card border border-claude-border gap-1">
             {[
               { id: 'system', label: 'System', icon: Monitor },
               { id: 'light', label: 'Light', icon: Sun },
@@ -102,8 +102,8 @@ export const SettingsGeneral: React.FC<SettingsTabProps> = ({ settings, updateSe
                   onClick={() => updateSettings({ theme: th.id as any })}
                   className={`p-1.5 rounded-lg text-xs transition-all ${
                     isSelected
-                      ? 'bg-[#2A2824] text-[#ECEBE7] shadow-xs'
-                      : 'text-[#7E7C76] hover:text-[#ECEBE7]'
+                      ? 'bg-claude-input text-claude-text-primary shadow-xs'
+                      : 'text-claude-text-muted hover:text-claude-text-primary'
                   }`}
                   title={th.label}
                   aria-label={th.label}
@@ -117,11 +117,11 @@ export const SettingsGeneral: React.FC<SettingsTabProps> = ({ settings, updateSe
 
         {/* Chat font dropdown */}
         <div className="flex items-center justify-between">
-          <label className="text-xs font-normal text-[#B4B3AD]">Chat font</label>
+          <label className="text-xs font-normal text-claude-text-secondary">Chat font</label>
           <select
             value={settings.chatFont || 'serif'}
             onChange={(e) => updateSettings({ chatFont: e.target.value as any })}
-            className="bg-[#1C1B19] text-xs text-[#ECEBE7] px-3 py-1.5 rounded-xl border border-[#2B2A27] focus:outline-none focus:border-[#DA7756]"
+            className="bg-claude-card text-xs text-claude-text-primary px-3 py-1.5 rounded-xl border border-claude-border focus:outline-none focus:border-[#DA7756]"
           >
             <option value="serif">Anthropic Serif</option>
             <option value="sans">Sans</option>
@@ -131,8 +131,8 @@ export const SettingsGeneral: React.FC<SettingsTabProps> = ({ settings, updateSe
 
         {/* Motion */}
         <div className="space-y-2">
-          <label className="block text-xs font-normal text-[#B4B3AD]">Motion</label>
-          <p className="text-[11px] text-[#8C8A82]">
+          <label className="block text-xs font-normal text-claude-text-secondary">Motion</label>
+          <p className="text-[11px] text-claude-text-secondary">
             Control animation in streaming responses and other interface elements.
           </p>
           <div className="grid grid-cols-2 gap-2">
@@ -142,8 +142,8 @@ export const SettingsGeneral: React.FC<SettingsTabProps> = ({ settings, updateSe
                 onClick={() => updateSettings({ motion: m as any })}
                 className={`py-2 rounded-xl text-xs capitalize border transition-all ${
                   settings.motion === m
-                    ? 'bg-[#2A2824] border-[#DA7756] text-[#ECEBE7] font-medium'
-                    : 'bg-[#1C1B19] border-[#2B2A27] text-[#8C8A82] hover:text-[#ECEBE7]'
+                    ? 'bg-claude-input border-[#DA7756] text-claude-text-primary font-medium'
+                    : 'bg-claude-card border-claude-border text-claude-text-secondary hover:text-claude-text-primary'
                 }`}
               >
                 {m === 'system' ? 'System Default' : 'Reduced Motion'}
@@ -156,8 +156,8 @@ export const SettingsGeneral: React.FC<SettingsTabProps> = ({ settings, updateSe
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-medium text-[#ECEBE7]">Voice input dictation</span>
-              <p className="text-[11px] text-[#8C8A82]">Speech-to-text in chat composer</p>
+              <span className="text-xs font-medium text-claude-text-primary">Voice input dictation</span>
+              <p className="text-[11px] text-claude-text-secondary">Speech-to-text in chat composer</p>
             </div>
             <input
               type="checkbox"
@@ -169,8 +169,8 @@ export const SettingsGeneral: React.FC<SettingsTabProps> = ({ settings, updateSe
 
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-xs font-medium text-[#ECEBE7]">Read aloud speech</span>
-              <p className="text-[11px] text-[#8C8A82]">Audio speaker icon under assistant messages</p>
+              <span className="text-xs font-medium text-claude-text-primary">Read aloud speech</span>
+              <p className="text-[11px] text-claude-text-secondary">Audio speaker icon under assistant messages</p>
             </div>
             <input
               type="checkbox"

@@ -1,12 +1,19 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Conversation, Message, Artifact, Attachment, ModelProfileId, Project, ActivePageView } from '../types';
-import { loadConversations, saveConversations, loadProjects, saveProjects, loadAllArtifacts, saveAllArtifacts } from '../services/storage';
+import { HistorySync, HistoryStatus } from '../services/historySync.mjs';
 import { useSettings } from './SettingsContext';
 import { chatApiClient } from '../services/apiClient';
 import { extractArtifactsAndThinking, cleanStreamingChatText } from '../services/artifactParser';
+import { conversationRootPath, sessionIdFromPath, sessionPath } from '../services/sessionPath';
+import { loadSelectedModel, persistSelectedModel, validModel } from '../services/models';
 
 interface ChatContextType {
   conversations: Conversation[];
+  historyHasMore: boolean;
+  loadMoreHistory: () => Promise<void>;
+  searchHistory: (q:string,cursor?:string) => Promise<any>;
+  conversationLoadError: string;
+  retryConversationLoad: () => void;
   activeConversationId: string | null;
   setActiveConversationId: (id: string | null) => void;
   activeConversation: Conversation | null;
@@ -29,7 +36,7 @@ interface ChatContextType {
   
   // Actions
   createNewConversation: (projectId?: string) => string;
-  selectConversation: (id: string) => void;
+  selectConversation: (id: string, options?: { history?: boolean }) => void;
   sendMessage: (content: string, attachments?: Attachment[]) => Promise<void>;
   regenerateResponse: (assistantMessageId?: string) => Promise<void>;
   editUserMessage: (userMessageId: string, newContent: string) => Promise<void>;
@@ -51,35 +58,79 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { settings } = useSettings();
-  const [conversations, setConversations] = useState<Conversation[]>(() => loadConversations());
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<ModelProfileId>('sonnet-5');
+  const [selectedModel, setSelectedModel] = useState<ModelProfileId>(loadSelectedModel);
+  useEffect(() => { persistSelectedModel(selectedModel); }, [selectedModel]);
   const [activeMode, setActiveMode] = useState<'chat' | 'cowork'>('chat');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [activeArtifact, setActiveArtifact] = useState<Artifact | null>(null);
+  const [activeArtifact, setActiveArtifactState] = useState<Artifact | null>(null);
   const [isArtifactPaneOpen, setIsArtifactPaneOpen] = useState(false);
-  const [projects, setProjects] = useState<Project[]>(() => loadProjects());
-  const [activeProject, setActiveProject] = useState<Project | null>(null);
-  const [allArtifacts, setAllArtifacts] = useState<Artifact[]>(() => loadAllArtifacts());
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [activeProject, setActiveProjectState] = useState<Project | null>(null);
+  const [allArtifacts, setAllArtifacts] = useState<Artifact[]>([]);
   const [activePageView, setActivePageView] = useState<ActivePageView>('chat');
 
-  // Sync conversations to storage
+  const [historyStatus, setHistoryStatus] = useState<HistoryStatus>({ready:false,error:'',notice:'',pending:0,saving:false});
+  const syncRef = useRef<HistorySync | null>(null);
+  if (!syncRef.current) syncRef.current = new HistorySync({
+    onChange: snapshot => { setConversations(snapshot.conversations); setProjects(snapshot.projects); setAllArtifacts(snapshot.artifacts); },
+    onStatus: setHistoryStatus
+  });
+  const sync = syncRef.current;
+  const [conversationLoadError,setConversationLoadError]=useState('');
+  const selectedRef=useRef<string|null>(null);
+  const projectSelection=useRef<string|null>(null);
+  const artifactSelection=useRef<string|null>(null);
+  const setActiveProject=(project:Project|null)=>{
+    projectSelection.current=project?.id||null;setActiveProjectState(project?._historyUnloaded ? null : project);
+    if(project?._historyUnloaded)void sync.load('project',project.id).then(full=>{if(projectSelection.current===project.id)setActiveProjectState(full);}).catch(()=>{setConversationLoadError('项目加载失败，请重新打开重试');});
+  };
+  const setActiveArtifact=(artifact:Artifact|null)=>{
+    artifactSelection.current=artifact?.id||null;
+    if(artifact?._historyUnloaded){setActiveArtifactState(null);void sync.load('artifact',artifact.id).then(full=>{if(artifactSelection.current===artifact.id)setActiveArtifactState(full);}).catch(()=>{setConversationLoadError('作品加载失败，请重新打开重试');});}
+    else setActiveArtifactState(artifact);
+  };
+  const loadSelected=async(id:string)=>{setConversationLoadError('');try{await sync.load('conversation',id);}catch{if(selectedRef.current===id)setConversationLoadError('会话加载失败，请重试');}};
+  useEffect(()=>{selectedRef.current=activeConversationId;setConversationLoadError('');if(activeConversationId)void loadSelected(activeConversationId);},[activeConversationId]);
+  const streamRef = useRef(false);
+  const uploadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    saveConversations(conversations);
-  }, [conversations]);
-
-  // Sync projects to storage
+    void sync.start();
+    const refresh = () => { if (!streamRef.current) void sync.refresh(); };
+    const online = () => { void sync.flush().then(refresh); };
+    const interval = setInterval(refresh, 30000);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('online', online);
+    return () => { clearInterval(interval); window.removeEventListener('focus', refresh); window.removeEventListener('online', online); if(uploadTimer.current)clearTimeout(uploadTimer.current); uploadTimer.current=null; };
+  }, [sync]);
+  useLayoutEffect(() => {
+    sync.update({conversations,projects,artifacts:allArtifacts});
+    const finished = streamRef.current && !isStreaming;
+    streamRef.current = isStreaming;
+    if (finished) {
+      if(uploadTimer.current)clearTimeout(uploadTimer.current);
+      uploadTimer.current=null;
+      void sync.flush();
+    } else if (!uploadTimer.current) {
+      uploadTimer.current=setTimeout(() => { uploadTimer.current=null; void sync.flush(); }, isStreaming ? 2000 : 650);
+    }
+  }, [conversations,projects,allArtifacts,isStreaming,sync]);
   useEffect(() => {
-    saveProjects(projects);
-  }, [projects]);
-
-  // Sync artifacts to storage
-  useEffect(() => {
-    saveAllArtifacts(allArtifacts);
-  }, [allArtifacts]);
+    const preventLoss = (e: BeforeUnloadEvent) => { if(historyStatus.pending || isStreaming) {e.preventDefault();e.returnValue='';} };
+    window.addEventListener('beforeunload',preventLoss);
+    return () => window.removeEventListener('beforeunload',preventLoss);
+  }, [historyStatus.pending,isStreaming]);
 
   // Derive active conversation
   const activeConversation = conversations.find((c) => c.id === activeConversationId) || null;
+  const restoredModelId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!activeConversationId) { restoredModelId.current = null; return; }
+    if (!activeConversation || activeConversation._historyUnloaded || restoredModelId.current === activeConversationId) return;
+    restoredModelId.current = activeConversationId;
+    setSelectedModel(validModel(activeConversation.model) ? activeConversation.model : 'opus-5');
+  }, [activeConversationId, activeConversation]);
 
   const createNewConversation = (projectId?: string): string => {
     setActiveConversationId(null);
@@ -92,16 +143,20 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setActiveProject(null);
     }
     setActivePageView('chat');
+    window.history.replaceState(null, '', conversationRootPath());
     return '';
   };
 
-  const selectConversation = (id: string) => {
+  const selectConversation = (id: string, options: { history?: boolean } = {}) => {
+    selectedRef.current=id;setConversationLoadError('');
     setActiveConversationId(id);
+    void loadSelected(id);
     setActivePageView('chat');
-    const conv = conversations.find((c) => c.id === id);
-    if (conv && conv.model) {
-      setSelectedModel(conv.model);
+    if (options.history !== false && sessionIdFromPath() !== id) {
+      window.history.pushState(null, '', sessionPath(id));
     }
+    const conv = conversations.find((c) => c.id === id);
+    if (conv && !conv._historyUnloaded && validModel(conv.model)) setSelectedModel(conv.model);
     if (conv?.projectId) {
       const proj = projects.find((p) => p.id === conv.projectId) || null;
       setActiveProject(proj);
@@ -187,7 +242,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       let combinedInstructions = settings.customInstructions || '';
       const currentConv = conversations.find((c) => c.id === convId);
       const projId = currentConv?.projectId || activeProject?.id;
-      const proj = projects.find((p) => p.id === projId) || activeProject;
+      let proj = projects.find((p) => p.id === projId) || (activeProject?.id === projId ? activeProject : null);
+      if(projId && (!proj || proj._historyUnloaded))proj=await sync.load('project',projId);
 
       if (proj) {
         if (proj.customInstructions) {
@@ -282,6 +338,8 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setActivePageView('chat');
     let convId = activeConversationId;
     let currentConv = activeConversation;
+    if(currentConv?._historyUnloaded)return;
+    if(activeConversationId&&!currentConv)return;
 
     const userMessageId = `msg-${Date.now()}-user`;
     const assistantMessageId = `msg-${Date.now() + 1}-assistant`;
@@ -324,6 +382,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
       setConversations((prev) => [newConv, ...prev]);
       setActiveConversationId(convId);
+      window.history.pushState(null, '', sessionPath(convId));
     } else {
       const isFirstMessage = currentConv.messages.length === 0;
       const newTitle = isFirstMessage ? (content.trim().slice(0, 38) || 'Greeting') : currentConv.title;
@@ -342,7 +401,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const regenerateResponse = async (assistantMessageId?: string) => {
-    if (!activeConversation || isStreaming) return;
+    if (!activeConversation || activeConversation._historyUnloaded || isStreaming) return;
     const conv = activeConversation;
     const messages = conv.messages;
 
@@ -376,7 +435,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const editUserMessage = async (userMessageId: string, newContent: string) => {
-    if (!activeConversation || isStreaming) return;
+    if (!activeConversation || activeConversation._historyUnloaded || isStreaming) return;
     const conv = activeConversation;
     const userIdx = conv.messages.findIndex((m) => m.id === userMessageId);
     if (userIdx === -1) return;
@@ -409,7 +468,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const retryLastRequest = async () => {
-    if (!activeConversation || isStreaming) return;
+    if (!activeConversation || activeConversation._historyUnloaded || isStreaming) return;
     await regenerateResponse();
   };
 
@@ -422,6 +481,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setConversations((prev) => prev.filter((c) => c.id !== id));
     if (activeConversationId === id) {
       setActiveConversationId(null);
+      window.history.replaceState(null, '', conversationRootPath());
       setActiveArtifact(null);
       setIsArtifactPaneOpen(false);
     }
@@ -464,6 +524,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setConversations((prev) => [newConv, ...prev]);
     setActiveConversationId(convId);
+    window.history.pushState(null, '', sessionPath(convId));
     setActiveProject(null);
     setActivePageView('chat');
     return convId;
@@ -533,16 +594,41 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const clearAllConversations = () => {
-    setConversations([]);
+    void sync.clearConversations().catch(()=>setConversationLoadError('清空历史失败，请重试'));
     setActiveConversationId(null);
     setActiveArtifact(null);
     setIsArtifactPaneOpen(false);
   };
 
+  useEffect(() => {
+    if (!historyStatus.ready) return;
+    const id = sessionIdFromPath();
+    if (id) selectConversation(id, { history: false });
+  }, [historyStatus.ready]);
+
+  useEffect(() => {
+    const onPopState = () => {
+      const id = sessionIdFromPath();
+      if (id) selectConversation(id, { history: false });
+      else {
+        setActiveConversationId(null);
+        setConversationLoadError('');
+        setActivePageView('chat');
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  });
+
   return (
     <ChatContext.Provider
       value={{
         conversations,
+        historyHasMore:!!sync.next,
+        loadMoreHistory:()=>sync.more(),
+        searchHistory:(q,cursor)=>sync.search(q,cursor),
+        conversationLoadError,
+        retryConversationLoad:()=>{if(activeConversationId)void loadSelected(activeConversationId);},
         activeConversationId,
         setActiveConversationId,
         activeConversation,
@@ -581,7 +667,16 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({ children
         createNewArtifact
       }}
     >
-      {children}
+      <div className="flex flex-col h-dvh w-full overflow-hidden">
+        <div role={historyStatus.error || historyStatus.notice ? 'alert' : 'status'} data-testid="history-sync-status" style={historyStatus.error || historyStatus.notice ? undefined : {display: 'none'}} className="shrink-0 border-b border-claude-border bg-claude-bg text-claude-text-primary px-3 py-1 text-xs flex flex-wrap items-center gap-2">
+          <span>{historyStatus.error || historyStatus.notice || (!historyStatus.ready ? '正在加载共享历史…' : historyStatus.pending ? `待保存 ${historyStatus.pending} 项，请勿关闭页面` : '共享工作区 · 历史已保存到服务器')}</span>
+          {(historyStatus.error || historyStatus.pending > 0) && <button className="underline p-1" onClick={() => { void (sync.ready ? sync.flush().then(() => sync.refresh()) : sync.start()); }}>重试同步</button>}
+          {historyStatus.notice && <button className="underline p-1" onClick={() => setHistoryStatus(s => ({...s,notice:''}))}>关闭提示</button>}
+        </div>
+        <div className="flex-1 min-h-0 relative [&>div]:!h-full">
+          {historyStatus.ready ? children : <div className="p-8 text-claude-text-primary bg-claude-bg h-full">正在安全加载云端历史；完成前不会上传空白状态。原始本机历史保留为迁移备份。</div>}
+        </div>
+      </div>
     </ChatContext.Provider>
   );
 };

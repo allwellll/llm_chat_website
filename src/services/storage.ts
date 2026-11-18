@@ -87,19 +87,19 @@ export const DEFAULT_MEMORIES: MemoryItem[] = [
 
 export const DEFAULT_SETTINGS: UserSettings = {
   // Profile
-  fullName: 'Tenzin Norbu',
-  userName: 'Norbu',
-  userEmail: 'tenzinrey@gmail.com',
-  userRole: 'developer',
+  fullName: 'Private User',
+  userName: 'Private User',
+  userEmail: 'owner@localhost',
+  userRole: 'Private workspace',
   avatarUrl: '',
   customInstructions: `You are Claude, a helpful, harmless, and honest assistant created by Anthropic.
 When providing code, make it clean, modular, and production-ready with modern TypeScript/React.
 When generating complete interactive components or applications, wrap them in proper artifact blocks (<antArtifact identifier="..." type="..." title="...">...</antArtifact>) so the interactive sandbox can execute them.`,
 
   // Preferences
-  defaultModel: 'sonnet-5',
+  defaultModel: 'opus-5',
   thinkingBudget: 4000,
-  thinkingEffort: 'medium',
+  thinkingEffort: 'high',
   thinkingEnabled: true,
   theme: 'dark',
   chatFont: 'sans',
@@ -128,18 +128,18 @@ When generating complete interactive components or applications, wrap them in pr
   // Privacy
   privacy: {
     locationMetadata: false,
-    improveAiModels: true
+    improveAiModels: false
   },
 
   // Capabilities
   capabilities: {
     toolAccessMode: 'needed',
-    connectorSearch: true,
+    connectorSearch: false,
     switchModelsFlagged: true,
     artifacts: true,
     aiArtifacts: true,
     inlineVisualizations: true,
-    codeExecution: true,
+    codeExecution: false,
     fileCreation: true,
     fileAnalysis: true
   },
@@ -172,9 +172,9 @@ When generating complete interactive components or applications, wrap them in pr
   // Memory & Connectors
   memory: {
     enabled: true,
-    items: DEFAULT_MEMORIES
+    items: []
   },
-  connectors: DEFAULT_CONNECTORS,
+  connectors: [],
   skills: DEFAULT_SKILLS
 };
 

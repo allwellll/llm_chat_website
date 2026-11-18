@@ -69,14 +69,14 @@ export const ExecutionStepsTree: React.FC<ExecutionTreeProps> = ({ artifacts }) 
       {/* Expandable Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 text-xs text-[#8C8A82] hover:text-[#ECEBE7] transition-colors py-0.5 font-sans group"
+        className="flex items-center gap-1.5 text-xs text-claude-text-secondary hover:text-claude-text-primary transition-colors py-0.5 font-sans group"
         aria-expanded={isOpen}
       >
-        <span className="text-[#8C8A82] group-hover:text-[#ECEBE7]">Ran a command, created a file, read a file</span>
+        <span className="text-claude-text-secondary group-hover:text-claude-text-primary">Ran a command, created a file, read a file</span>
         {isOpen ? (
-          <ChevronDown className="w-3.5 h-3.5 text-[#706E68]" />
+          <ChevronDown className="w-3.5 h-3.5 text-claude-text-muted" />
         ) : (
-          <ChevronRight className="w-3.5 h-3.5 text-[#706E68]" />
+          <ChevronRight className="w-3.5 h-3.5 text-claude-text-muted" />
         )}
       </button>
 
@@ -85,38 +85,38 @@ export const ExecutionStepsTree: React.FC<ExecutionTreeProps> = ({ artifacts }) 
         <div className="mt-3 ml-0.5 space-y-0 text-xs animate-in fade-in duration-150">
           {/* Step 1: Command */}
           <div className="flex items-center gap-3">
-            <div className="w-5 h-5 rounded-md bg-[#1D1C1A] border border-[#2B2A27] flex items-center justify-center text-[#8C8A82] shrink-0">
+            <div className="w-5 h-5 rounded-md bg-claude-card border border-claude-border flex items-center justify-center text-claude-text-secondary shrink-0">
               <Terminal className="w-3 h-3" />
             </div>
-            <span className="text-[#9C9A92] font-sans text-xs">Ensure workspace output directory exists</span>
+            <span className="text-claude-text-secondary font-sans text-xs">Ensure workspace output directory exists</span>
           </div>
 
           {/* Connector Line 1 */}
           <div className="w-5 flex justify-center py-0.5">
-            <div className="w-[1px] h-3.5 bg-[#2C2B28]" />
+            <div className="w-[1px] h-3.5 bg-claude-card-hover" />
           </div>
 
           {/* Step 2: Real Generated Artifact File */}
           <div className="flex items-center gap-3">
-            <div className="w-5 h-5 rounded-md bg-[#1D1C1A] border border-[#2B2A27] flex items-center justify-center text-[#DA7756] shrink-0">
+            <div className="w-5 h-5 rounded-md bg-claude-card border border-claude-border flex items-center justify-center text-[#DA7756] shrink-0">
               <Code2 className="w-3 h-3" />
             </div>
-            <span className="text-[#ECEBE7] font-medium font-sans text-xs">
+            <span className="text-claude-text-primary font-medium font-sans text-xs">
               {firstArtifact.title} as a self-contained {fileTypeLabel} file
             </span>
           </div>
 
           {/* Connector Line 2 */}
           <div className="w-5 flex justify-center py-0.5">
-            <div className="w-[1px] h-3.5 bg-[#2C2B28]" />
+            <div className="w-[1px] h-3.5 bg-claude-card-hover" />
           </div>
 
           {/* Step 3: Presentation */}
           <div className="flex items-center gap-3">
-            <div className="w-5 h-5 rounded-md bg-[#1D1C1A] border border-[#2B2A27] flex items-center justify-center text-[#8C8A82] shrink-0">
+            <div className="w-5 h-5 rounded-md bg-claude-card border border-claude-border flex items-center justify-center text-claude-text-secondary shrink-0">
               <FileCheck className="w-3 h-3" />
             </div>
-            <span className="text-[#9C9A92] font-sans text-xs">Presented file</span>
+            <span className="text-claude-text-secondary font-sans text-xs">Presented file</span>
           </div>
         </div>
       )}
@@ -141,11 +141,11 @@ export const ClaudeThinkingStatus: React.FC<ClaudeThinkingStatusProps> = ({ cust
   const displayStatus = customStatus ? (customStatus.endsWith('...') ? customStatus : `${customStatus}...`) : `${THINKING_WORDS[index]}...`;
 
   return (
-    <div className="flex items-center gap-2.5 py-2 text-xs text-[#9C9A92] select-none animate-in fade-in duration-300">
+    <div className="flex items-center gap-2.5 py-2 text-xs text-claude-text-secondary select-none animate-in fade-in duration-300">
       <div className="animate-[spin_4s_linear_infinite] origin-center shrink-0">
         <ClaudeStarburst size={18} color="#DA7756" />
       </div>
-      <span className="font-serif italic text-sm text-[#B4B3AD]">
+      <span className="font-serif italic text-sm text-claude-text-secondary">
         {displayStatus}
       </span>
     </div>
@@ -172,10 +172,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
   const isUser = message.role === 'user';
   const hasArtifacts = Boolean(message.artifacts && message.artifacts.length > 0);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+  const handleCopy = async () => {
+    setIsCopied(false);
+    try {
+      await navigator.clipboard.writeText(message.content);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch {
+      // Permission denied / unavailable clipboard must never look successful.
+      setIsCopied(false);
+    }
   };
 
   const handleSpeak = () => {
@@ -241,13 +247,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
               {message.attachments.map((att) => (
                 <div
                   key={att.id}
-                  className="flex items-center gap-2 p-1.5 bg-[#1C1B19] border border-[#2B2A27] rounded-xl text-xs text-[#ECEBE7]"
+                  className="flex items-center gap-2 p-1.5 bg-claude-card border border-claude-border rounded-xl text-xs text-claude-text-primary"
                 >
                   {att.dataUrl ? (
                     <img
                       src={att.dataUrl}
                       alt={att.name}
-                      className="w-12 h-12 object-cover rounded-lg border border-[#333]"
+                      className="w-12 h-12 object-cover rounded-lg border border-claude-border"
                     />
                   ) : (
                     <FileText className="w-5 h-5 text-[#DA7756]" />
@@ -259,19 +265,19 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
           )}
 
           {isEditing ? (
-            <form onSubmit={handleSaveEdit} className="w-full min-w-[280px] bg-[#22211F] p-3 rounded-2xl border border-[#DA7756] space-y-2">
+            <form onSubmit={handleSaveEdit} className="w-full min-w-[280px] bg-claude-surface p-3 rounded-2xl border border-[#DA7756] space-y-2">
               <textarea
                 value={editedContent}
                 onChange={(e) => setEditedContent(e.target.value)}
                 rows={3}
-                className="w-full bg-transparent text-xs text-[#ECEBE7] focus:outline-none resize-none font-sans leading-relaxed"
+                className="w-full bg-transparent text-xs text-claude-text-primary focus:outline-none resize-none font-sans leading-relaxed"
                 autoFocus
               />
               <div className="flex justify-end gap-2 text-xs">
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-3 py-1 rounded-lg text-[#8C8A82] hover:bg-[#2A2926]"
+                  className="px-3 py-1 rounded-lg text-claude-text-secondary hover:bg-claude-card-hover"
                 >
                   Cancel
                 </button>
@@ -285,22 +291,33 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
             </form>
           ) : (
             <div className="relative group/msg">
-              <div className="bg-[#2C2A26] text-[#ECEBE7] px-4 py-2.5 rounded-2xl rounded-tr-md text-[14.5px] leading-relaxed whitespace-pre-wrap selection:bg-[#DA7756]/40 border border-[#3A3834]/60 shadow-xs">
+              <div className="bg-claude-card-hover text-claude-text-primary px-4 py-2.5 rounded-2xl rounded-tr-md text-[14.5px] leading-relaxed whitespace-pre-wrap selection:bg-[#DA7756]/40 border border-claude-border/60 shadow-xs">
                 {message.content}
               </div>
 
-              {/* Edit button on hover */}
+              {/* User message actions: same copy icon, tooltip and feedback as assistant. */}
               {!isStreaming && (
-                <button
-                  onClick={() => {
-                    setEditedContent(message.content);
-                    setIsEditing(true);
-                  }}
-                  className="opacity-0 group-hover/msg:opacity-100 absolute -left-8 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-[#22211F] text-[#706E68] hover:text-[#ECEBE7] transition-all"
-                  title="Edit message"
-                >
-                  <Edit2 className="w-3.5 h-3.5" />
-                </button>
+                <div className="opacity-0 group-hover/msg:opacity-100 focus-within:opacity-100 absolute -left-8 top-1/2 -translate-y-1/2 w-8 pr-1 flex flex-col items-center gap-1 text-claude-text-muted transition-opacity">
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="p-1 rounded-lg hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
+                    title="Copy message"
+                  >
+                    {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditedContent(message.content);
+                      setIsEditing(true);
+                    }}
+                    className="p-1 rounded-lg hover:bg-claude-surface hover:text-claude-text-primary transition-colors"
+                    title="Edit message"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -332,7 +349,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
 
           {/* Main Conversational Markdown Text (matching Image 2 font style) */}
           {message.content && (
-            <div className="claude-prose text-sm sm:text-base text-[#ECEBE7] font-serif leading-relaxed">
+            <div className="claude-prose text-sm sm:text-base text-claude-text-primary font-serif leading-relaxed">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
                 rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false }], rehypeHighlight]}
@@ -348,12 +365,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
 
                     if (!inline && match) {
                       return (
-                        <div className="relative my-3 rounded-xl overflow-hidden bg-[#121211] border border-[#242320] group/code font-sans">
-                          <div className="flex items-center justify-between px-3 py-1.5 bg-[#181816] border-b border-[#242320] text-[11px] text-[#8C8A82]">
+                        <div className="relative my-3 rounded-xl overflow-hidden bg-claude-bg border border-claude-border-subtle group/code font-sans">
+                          <div className="flex items-center justify-between px-3 py-1.5 bg-claude-bg border-b border-claude-border-subtle text-[11px] text-claude-text-secondary">
                             <span className="font-mono">{match[1]}</span>
                             <button
                               onClick={() => navigator.clipboard.writeText(codeString)}
-                              className="flex items-center gap-1 hover:text-[#ECEBE7] transition-colors"
+                              className="flex items-center gap-1 hover:text-claude-text-primary transition-colors"
                             >
                               <Copy className="w-3 h-3" />
                               <span>Copy</span>
@@ -368,7 +385,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
                       );
                     }
                     return (
-                      <code className="bg-[#242320] px-1.5 py-0.5 rounded text-xs font-mono text-[#DA7756]" {...props}>
+                      <code className="bg-claude-surface px-1.5 py-0.5 rounded text-xs font-mono text-[#DA7756]" {...props}>
                         {children}
                       </code>
                     );
@@ -392,19 +409,19 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
                 <div
                   key={art.id}
                   onClick={() => handleOpenArtifact(art)}
-                  className="w-full rounded-2xl border border-[#2B2A27] bg-[#171615] hover:bg-[#1C1B19] hover:border-[#383733] transition-all p-3.5 flex items-center justify-between cursor-pointer group shadow-sm"
+                  className="w-full rounded-2xl border border-claude-border bg-claude-bg hover:bg-claude-card hover:border-claude-border transition-all p-3.5 flex items-center justify-between cursor-pointer group shadow-sm"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
                     {/* Left Thumbnail icon box */}
-                    <div className="w-11 h-11 rounded-xl bg-[#201F1D] border border-[#2D2C28] flex items-center justify-center text-[#DA7756] shrink-0 group-hover:scale-105 transition-transform">
+                    <div className="w-11 h-11 rounded-xl bg-claude-surface border border-claude-border flex items-center justify-center text-[#DA7756] shrink-0 group-hover:scale-105 transition-transform">
                       <Code2 className="w-5 h-5" />
                     </div>
                     {/* Title & Subtitle */}
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-[#ECEBE7] group-hover:text-[#DA7756] transition-colors truncate">
+                      <div className="text-sm font-medium text-claude-text-primary group-hover:text-[#DA7756] transition-colors truncate">
                         {art.title || 'Code Artifact'}
                       </div>
-                      <div className="text-xs text-[#7E7C76] font-sans mt-0.5">
+                      <div className="text-xs text-claude-text-muted font-sans mt-0.5">
                         Code · {art.type.includes('html') ? 'HTML' : art.type.includes('react') ? 'React' : art.language?.toUpperCase() || 'Script'}
                       </div>
                     </div>
@@ -413,9 +430,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
                   {/* Right Download Action Button */}
                   <button
                     onClick={(e) => handleDownloadArtifact(art, e)}
-                    className="px-4 py-2 rounded-xl bg-[#22211F] hover:bg-[#2A2926] text-xs font-medium text-[#ECEBE7] border border-[#302F2B] transition-colors shrink-0 shadow-sm flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-claude-surface hover:bg-claude-card-hover text-xs font-medium text-claude-text-primary border border-claude-border transition-colors shrink-0 shadow-sm flex items-center gap-1.5"
                   >
-                    <Download className="w-3.5 h-3.5 text-[#8C8A82]" />
+                    <Download className="w-3.5 h-3.5 text-claude-text-secondary" />
                     <span>Download</span>
                   </button>
                 </div>
@@ -425,11 +442,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
 
           {/* Action Toolbar (matching Image 2 bottom toolbar) */}
           {!message.isStreaming && (message.content || hasArtifacts) && (
-            <div className="flex items-center gap-3 pt-2 text-[#706E68] text-xs select-none">
+            <div className="flex items-center gap-3 pt-2 text-claude-text-muted text-xs select-none">
               {/* Copy */}
               <button
                 onClick={handleCopy}
-                className="p-1 rounded-lg hover:text-[#ECEBE7] hover:bg-[#201F1D] transition-colors"
+                className="p-1 rounded-lg hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
                 title="Copy message"
               >
                 {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -439,7 +456,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
               <button
                 onClick={handleSpeak}
                 className={`p-1 rounded-lg transition-colors ${
-                  isSpeaking ? 'text-[#DA7756] bg-[#DA7756]/10' : 'hover:text-[#ECEBE7] hover:bg-[#201F1D]'
+                  isSpeaking ? 'text-[#DA7756] bg-[#DA7756]/10' : 'hover:text-claude-text-primary hover:bg-claude-surface'
                 }`}
                 title={isSpeaking ? 'Stop reading' : 'Read aloud'}
               >
@@ -450,7 +467,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
               <button
                 onClick={() => setFeedback(feedback === 'like' ? null : 'like')}
                 className={`p-1 rounded-lg transition-colors ${
-                  feedback === 'like' ? 'text-emerald-400 bg-emerald-950/30' : 'hover:text-[#ECEBE7] hover:bg-[#201F1D]'
+                  feedback === 'like' ? 'text-emerald-400 bg-emerald-950/30' : 'hover:text-claude-text-primary hover:bg-claude-surface'
                 }`}
                 title="Good response"
               >
@@ -461,7 +478,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
               <button
                 onClick={() => setFeedback(feedback === 'dislike' ? null : 'dislike')}
                 className={`p-1 rounded-lg transition-colors ${
-                  feedback === 'dislike' ? 'text-red-400 bg-red-950/30' : 'hover:text-[#ECEBE7] hover:bg-[#201F1D]'
+                  feedback === 'dislike' ? 'text-red-400 bg-red-950/30' : 'hover:text-claude-text-primary hover:bg-claude-surface'
                 }`}
                 title="Poor response"
               >
@@ -472,7 +489,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
               {isLast && (
                 <button
                   onClick={() => regenerateResponse(message.id)}
-                  className="p-1 rounded-lg hover:text-[#ECEBE7] hover:bg-[#201F1D] transition-colors"
+                  className="p-1 rounded-lg hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
                   title="Retry response"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -480,7 +497,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isLast = fals
               )}
 
               {/* Timestamp */}
-              <span className="text-[11px] text-[#555] font-sans ml-1">
+              <span className="text-[11px] text-claude-text-muted font-sans ml-1">
                 {formatTimeAgo(message.createdAt)}
               </span>
             </div>

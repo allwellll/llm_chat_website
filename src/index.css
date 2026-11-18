@@ -1,40 +1,49 @@
+@import 'katex/dist/katex.min.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --bg-primary: #141413;
-    --bg-secondary: #121211;
-    --bg-card: #1C1B19;
-    --bg-card-hover: #242320;
-    --bg-input: #1F1E1C;
-    --border-color: #262522;
-    --text-primary: #ECEBE7;
-    --text-secondary: #9C9A92;
-    --text-muted: #706E68;
+    color-scheme: dark;
+    --bg-surface: 31 30 28;
+    --border-subtle: 40 39 36;
+    --code-inline: 255 255 255;
+    --bg-primary: 20 20 19;
+    --bg-secondary: 18 18 17;
+    --bg-card: 28 27 25;
+    --bg-card-hover: 36 35 32;
+    --bg-input: 31 30 28;
+    --border-color: 38 37 34;
+    --text-primary: 236 235 231;
+    --text-secondary: 156 154 146;
+    --text-muted: 112 110 104;
     --accent-coral: #DA7756;
     --accent-coral-hover: #C86545;
   }
 
   .light {
-    --bg-primary: #FAF9F5;
-    --bg-secondary: #F3F2EE;
-    --bg-card: #FFFFFF;
-    --bg-card-hover: #F8F7F2;
-    --bg-input: #FFFFFF;
-    --border-color: #E5E4DE;
-    --text-primary: #1C1B18;
-    --text-secondary: #66655F;
-    --text-muted: #999890;
+    color-scheme: light;
+    --bg-surface: 248 247 242;
+    --border-subtle: 236 235 229;
+    --code-inline: 0 0 0;
+    --bg-primary: 250 249 245;
+    --bg-secondary: 243 242 238;
+    --bg-card: 255 255 255;
+    --bg-card-hover: 248 247 242;
+    --bg-input: 255 255 255;
+    --border-color: 229 228 222;
+    --text-primary: 28 27 24;
+    --text-secondary: 102 101 95;
+    --text-muted: 153 152 144;
     --accent-coral: #DA7756;
     --accent-coral-hover: #C86545;
   }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+    background-color: rgb(var(--bg-primary));
+    color: rgb(var(--text-primary));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -75,14 +84,10 @@
 
 /* Claude Markdown prose styling */
 .claude-prose {
-  color: #ECEBE7;
+  color: rgb(var(--text-primary));
   line-height: 1.72;
   font-size: 0.965rem;
   letter-spacing: 0.005em;
-}
-
-.light .claude-prose {
-  color: #1C1B18;
 }
 
 .claude-prose p {
@@ -94,7 +99,7 @@
 }
 
 .claude-prose h1, .claude-prose h2, .claude-prose h3 {
-  color: #FBFBFA;
+  color: rgb(var(--text-primary));
   font-family: 'Lora', serif;
   font-weight: 500;
   margin-top: 1.25em;
@@ -102,27 +107,19 @@
   letter-spacing: -0.01em;
 }
 
-.light .claude-prose h1, .light .claude-prose h2, .light .claude-prose h3 {
-  color: #111;
-}
-
 .claude-prose code {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: rgb(var(--code-inline) / 0.08);
   padding: 0.15em 0.35em;
   border-radius: 5px;
   font-size: 0.865em;
 }
 
-.light .claude-prose code {
-  background-color: rgba(0, 0, 0, 0.06);
-}
-
 .claude-prose pre {
   margin: 0.85em 0;
   border-radius: 12px;
-  background-color: #121211;
-  border: 1px solid #242320;
+  background-color: rgb(var(--bg-secondary));
+  border: 1px solid rgb(var(--border-subtle));
 }
 
 .claude-prose ul {
@@ -144,7 +141,7 @@
 .claude-prose blockquote {
   border-left: 3px solid #DA7756;
   padding-left: 0.95em;
-  color: #9C9A92;
+  color: rgb(var(--text-secondary));
   font-style: italic;
   margin: 0.85em 0;
 }
@@ -241,5 +238,41 @@
 .code-editor-syntax .hljs-strong {
   font-weight: bold;
 }
+
+/* Keep the mobile composer on one line without clipping actions. */
+@media (max-width: 639px) {
+  .composer-toolbar {
+    flex-wrap: nowrap;
+    gap: 2px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .composer-tools, .composer-send-actions { gap: 2px; min-width: 0; }
+  .composer-tools { flex-shrink: 0; }
+  .composer-send-actions { margin-left: auto; }
+  .composer-toolbar button {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .composer-search-label { display: none; }
+  .composer-search-icon { display: block; }
+  .composer-search { padding: 0; background: transparent; position: relative; }
+  .composer-search[aria-checked="true"] { background: rgb(218 119 86 / 14%); }
+  .composer-search[aria-checked="true"]::after {
+    content: ''; position: absolute; right: 9px; top: 9px;
+    width: 5px; height: 5px; border-radius: 50%; background: #DA7756;
+  }
+  .composer-toolbar .composer-waveform, .composer-modes { display: none; }
+  .composer-send-actions > div > button { padding-left: 4px; padding-right: 4px; gap: 4px; white-space: nowrap; }
+  .composer-send-actions > div > button > span { display: none; }
+  .composer-toolbar { position: relative; }
+  .composer-send-actions, .composer-send-actions > div { position: static; }
+  .composer-send-actions > div > div { right: 8px; width: min(256px, calc(100vw - 40px)); }
+}
+
 
 

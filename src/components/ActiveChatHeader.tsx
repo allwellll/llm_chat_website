@@ -67,14 +67,14 @@ export const ActiveChatHeader: React.FC<ActiveChatHeaderProps> = ({
 
   return (
     <>
-      <header className="h-12 bg-[#141413] px-4 sm:px-6 flex items-center justify-between z-20 shrink-0 select-none border-b border-[#1f1e1c]">
+      <header className="h-12 bg-claude-bg px-4 sm:px-6 flex items-center justify-between z-20 shrink-0 select-none border-b border-claude-border-subtle">
         
         {/* TOP LEFT: Sidebar open toggle button (when collapsed) & Conversation Name ˅ */}
         <div className="flex items-center gap-2">
           {!isSidebarOpen && onToggleSidebar && (
             <button
               onClick={onToggleSidebar}
-              className="p-1.5 rounded-lg text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#201F1D] transition-colors"
+              className="hidden md:inline-flex p-1.5 rounded-lg text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
               title="Open sidebar"
               aria-label="Open sidebar"
             >
@@ -89,15 +89,15 @@ export const ActiveChatHeader: React.FC<ActiveChatHeaderProps> = ({
                 value={titleInput}
                 onChange={(e) => setTitleInput(e.target.value)}
                 autoFocus
-                className="bg-[#1C1B19] text-xs font-medium text-[#ECEBE7] px-2.5 py-1 rounded-lg border border-[#DA7756] focus:outline-none"
+                className="bg-claude-card text-xs font-medium text-claude-text-primary px-2.5 py-1 rounded-lg border border-[#DA7756] focus:outline-none"
               />
-              <button type="submit" className="p-1 text-[#DA7756] hover:text-white" title="Save">
+              <button type="submit" className="p-1 text-[#DA7756] hover:text-claude-text-primary" title="Save">
                 <Check className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
                 onClick={() => setIsEditingTitle(false)}
-                className="p-1 text-[#8C8A82] hover:text-[#ECEBE7]"
+                className="p-1 text-claude-text-secondary hover:text-claude-text-primary"
                 title="Cancel"
               >
                 <X className="w-3.5 h-3.5" />
@@ -112,35 +112,35 @@ export const ActiveChatHeader: React.FC<ActiveChatHeaderProps> = ({
                       setActiveProject(currentProject);
                       setActivePageView('projects');
                     }}
-                    className="text-xs text-[#8C8A82] hover:text-[#ECEBE7] transition-colors truncate max-w-[160px] font-normal"
+                    className="text-xs text-claude-text-secondary hover:text-claude-text-primary transition-colors truncate max-w-[160px] font-normal"
                     title={`Back to ${currentProject.name}`}
                   >
                     {currentProject.name}
                   </button>
-                  <span className="text-xs text-[#555450]">/</span>
+                  <span className="text-xs text-claude-text-muted">/</span>
                 </>
               )}
 
               <div className="relative">
                 <button
                   onClick={() => setIsTitleMenuOpen(!isTitleMenuOpen)}
-                  className="flex items-center gap-1.5 text-xs font-normal text-[#9C9A92] hover:text-[#ECEBE7] hover:bg-[#201F1D] px-2 py-1 rounded-lg transition-colors group"
+                  className="flex items-center gap-1.5 text-xs font-normal text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface px-2 py-1 rounded-lg transition-colors group"
                 >
-                  <span className="truncate max-w-[240px] sm:max-w-md text-[#ECEBE7] font-medium">
+                  <span className="truncate max-w-[240px] sm:max-w-md text-claude-text-primary font-medium">
                     {activeConversation.title}
                   </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#706E68] group-hover:text-[#ECEBE7]" />
+                  <ChevronDown className="w-3.5 h-3.5 text-claude-text-muted group-hover:text-claude-text-primary" />
                 </button>
 
                 {/* Title Context Menu */}
                 {isTitleMenuOpen && (
                   <div
-                    className="absolute top-full left-0 mt-1 w-44 bg-[#1C1B19] border border-[#2E2D2A] rounded-xl shadow-2xl p-1 z-50 text-xs"
+                    className="absolute top-full left-0 mt-1 w-44 bg-claude-card border border-claude-border rounded-xl shadow-2xl p-1 z-50 text-xs"
                     onClick={() => setIsTitleMenuOpen(false)}
                   >
                     <button
                       onClick={handleStartRename}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[#B4B3AD] hover:bg-[#242320] hover:text-[#ECEBE7] text-left"
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-claude-text-secondary hover:bg-claude-surface hover:text-claude-text-primary text-left"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                       <span>Rename chat</span>
@@ -167,7 +167,7 @@ export const ActiveChatHeader: React.FC<ActiveChatHeaderProps> = ({
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
                 isArtifactPaneOpen
                   ? 'bg-[#DA7756]/15 border-[#DA7756]/50 text-[#DA7756]'
-                  : 'bg-[#1C1B19] border-[#2E2D2A] text-[#B4B3AD] hover:text-[#ECEBE7]'
+                  : 'bg-claude-card border-claude-border text-claude-text-secondary hover:text-claude-text-primary'
               }`}
             >
               <ClaudeArtifactsIcon size={14} color="#DA7756" />
@@ -178,7 +178,7 @@ export const ActiveChatHeader: React.FC<ActiveChatHeaderProps> = ({
           {/* Share Button (matching reference) */}
           <button
             onClick={() => setIsShareModalOpen(true)}
-            className="px-3.5 py-1 rounded-lg bg-[#201F1D] hover:bg-[#282724] border border-[#2D2C28] text-xs font-normal text-[#ECEBE7] transition-colors"
+            className="px-3.5 py-1 rounded-lg bg-claude-surface hover:bg-claude-input border border-claude-border text-xs font-normal text-claude-text-primary transition-colors"
           >
             Share
           </button>
@@ -189,16 +189,16 @@ export const ActiveChatHeader: React.FC<ActiveChatHeaderProps> = ({
       {isShareModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150">
           <div
-            className="w-full max-w-sm bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-6 space-y-4 text-xs select-none"
+            className="w-full max-w-sm bg-claude-card border border-claude-border rounded-2xl shadow-2xl p-6 space-y-4 text-xs select-none"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-2 border-b border-[#262522]">
-              <span className="font-semibold text-sm text-[#ECEBE7]">Share Conversation</span>
-              <button onClick={() => setIsShareModalOpen(false)} className="text-[#7E7C76] hover:text-[#ECEBE7]">
+            <div className="flex items-center justify-between pb-2 border-b border-claude-border-subtle">
+              <span className="font-semibold text-sm text-claude-text-primary">Share Conversation</span>
+              <button onClick={() => setIsShareModalOpen(false)} className="text-claude-text-muted hover:text-claude-text-primary">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-[#8C8A82] leading-relaxed">
+            <p className="text-xs text-claude-text-secondary leading-relaxed">
               Anyone with this link will be able to view and fork this conversation in their workspace.
             </p>
             <button

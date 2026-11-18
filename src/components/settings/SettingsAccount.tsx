@@ -133,10 +133,10 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
   return (
     <div className="space-y-8 max-w-xl">
       <div>
-        <h3 className="text-sm font-semibold text-[#ECEBE7] mb-1">
+        <h3 className="text-sm font-semibold text-claude-text-primary mb-1">
           {isAdmin ? 'Account & Access Control (Admin)' : 'Account & Subscription'}
         </h3>
-        <p className="text-xs text-[#8C8A82]">
+        <p className="text-xs text-claude-text-secondary">
           {isAdmin 
             ? 'Manage credentials, authorized user logins, duration expiration, and private access.'
             : 'View your active plan, access expiration date, and session security.'}
@@ -145,13 +145,13 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
 
       {/* ─── MEMBER VIEW: MY SUBSCRIPTION & ACCESS DETAILS ─── */}
       {!isAdmin && (
-        <div className="p-4 rounded-2xl bg-[#1C1B19] border border-[#2B2A27] space-y-4">
+        <div className="p-4 rounded-2xl bg-claude-card border border-claude-border space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <span className="text-[11px] font-semibold text-[#8C8A82] uppercase tracking-wider">
+              <span className="text-[11px] font-semibold text-claude-text-secondary uppercase tracking-wider">
                 My Subscription
               </span>
-              <div className="text-sm font-medium text-[#ECEBE7] flex items-center gap-2">
+              <div className="text-sm font-medium text-claude-text-primary flex items-center gap-2">
                 <span>{currentUser?.name || 'Member'}</span>
                 <span className={`text-[10px] px-2 py-0.5 rounded font-semibold uppercase ${
                   currentUser?.plan === 'pro' 
@@ -180,21 +180,21 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#262522] text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-claude-border-subtle text-xs">
             <div>
-              <span className="text-[11px] text-[#706E68]">Email</span>
-              <div className="font-mono text-[#ECEBE7] text-[11px]">{currentUser?.email}</div>
+              <span className="text-[11px] text-claude-text-muted">Email</span>
+              <div className="font-mono text-claude-text-primary text-[11px]">{currentUser?.email}</div>
             </div>
             <div>
-              <span className="text-[11px] text-[#706E68]">Valid Until</span>
-              <div className="text-[#ECEBE7] text-[11px] flex items-center gap-1 font-medium">
+              <span className="text-[11px] text-claude-text-muted">Valid Until</span>
+              <div className="text-claude-text-primary text-[11px] flex items-center gap-1 font-medium">
                 <Calendar className="w-3.5 h-3.5 text-[#DA7756]" />
                 <span>{myExpiry.dateStr}</span>
               </div>
             </div>
           </div>
 
-          <p className="text-[11px] text-[#706E68] pt-1">
+          <p className="text-[11px] text-claude-text-muted pt-1">
             Need to extend your duration or have billing questions? Contact your workspace administrator.
           </p>
         </div>
@@ -205,11 +205,11 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-xs font-semibold text-[#ECEBE7] flex items-center gap-1.5">
+              <h4 className="text-xs font-semibold text-claude-text-primary flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#DA7756]" />
                 <span>Authorized User Accounts & Access Duration</span>
               </h4>
-              <p className="text-[11px] text-[#8C8A82]">
+              <p className="text-[11px] text-claude-text-secondary">
                 Create user logins with custom expiration (e.g. 1 month, 2 months). Only you (Admin) can see and manage this.
               </p>
             </div>
@@ -218,7 +218,7 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
                 type="button"
                 onClick={handleManualCloudSync}
                 disabled={isSyncingCloud}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#242320] hover:bg-[#2A2926] text-[#ECEBE7] text-xs font-medium border border-[#383632] transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-claude-surface hover:bg-claude-card-hover text-claude-text-primary text-xs font-medium border border-claude-border transition-colors disabled:opacity-50"
                 title="Sync accounts to Supabase Cloud Database"
               >
                 <RefreshCw className={`w-3.5 h-3.5 text-sky-400 ${isSyncingCloud ? 'animate-spin' : ''}`} />
@@ -244,8 +244,8 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
 
           {/* Add User Form */}
           {isAddingUser && (
-            <form onSubmit={handleAddUser} className="p-4 rounded-2xl bg-[#1C1B19] border border-[#DA7756]/40 space-y-3 animate-in fade-in duration-200">
-              <div className="text-xs font-medium text-[#ECEBE7] flex items-center gap-1">
+            <form onSubmit={handleAddUser} className="p-4 rounded-2xl bg-claude-card border border-[#DA7756]/40 space-y-3 animate-in fade-in duration-200">
+              <div className="text-xs font-medium text-claude-text-primary flex items-center gap-1">
                 <Key className="w-3.5 h-3.5 text-[#DA7756]" />
                 <span>Create User Login & Access Duration</span>
               </div>
@@ -258,44 +258,44 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[11px] text-[#8C8A82]">Full Name</label>
+                  <label className="text-[11px] text-claude-text-secondary">Full Name</label>
                   <input
                     type="text"
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g. Alex"
-                    className="w-full bg-[#141413] border border-[#2B2A27] focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-[#ECEBE7] outline-none"
+                    className="w-full bg-claude-bg border border-claude-border focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-claude-text-primary outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] text-[#8C8A82]">Email Address</label>
+                  <label className="text-[11px] text-claude-text-secondary">Email Address</label>
                   <input
                     type="email"
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="alex@company.com"
-                    className="w-full bg-[#141413] border border-[#2B2A27] focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-[#ECEBE7] outline-none"
+                    className="w-full bg-claude-bg border border-claude-border focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-claude-text-primary outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] text-[#8C8A82]">Password</label>
+                  <label className="text-[11px] text-claude-text-secondary">Password</label>
                   <input
                     type="text"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="SecretPass123"
-                    className="w-full bg-[#141413] border border-[#2B2A27] focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-[#ECEBE7] outline-none"
+                    className="w-full bg-claude-bg border border-claude-border focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-claude-text-primary outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] text-[#8C8A82]">Plan Tier</label>
+                  <label className="text-[11px] text-claude-text-secondary">Plan Tier</label>
                   <select
                     value={newPlan}
                     onChange={(e) => setNewPlan(e.target.value as UserPlanTier)}
-                    className="w-full bg-[#141413] border border-[#2B2A27] focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-[#ECEBE7] outline-none"
+                    className="w-full bg-claude-bg border border-claude-border focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-claude-text-primary outline-none"
                   >
                     <option value="max">Max Plan (All Models Unlocked + Fable 5)</option>
                     <option value="pro">Pro Plan (Claude 3.7 & Opus 5)</option>
@@ -305,14 +305,14 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
                 </div>
 
                 <div className="space-y-1 sm:col-span-2">
-                  <label className="text-[11px] text-[#8C8A82] flex items-center gap-1">
+                  <label className="text-[11px] text-claude-text-secondary flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5 text-[#DA7756]" />
                     <span>Access Duration (Auto-Expires After)</span>
                   </label>
                   <select
                     value={durationDays}
                     onChange={(e) => setDurationDays(Number(e.target.value))}
-                    className="w-full bg-[#141413] border border-[#2B2A27] focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-[#ECEBE7] outline-none"
+                    className="w-full bg-claude-bg border border-claude-border focus:border-[#DA7756] rounded-xl px-3 py-2 text-xs text-claude-text-primary outline-none"
                   >
                     <option value={30}>1 Month (30 Days)</option>
                     <option value={60}>2 Months (60 Days)</option>
@@ -322,7 +322,7 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
                     <option value={7}>7 Days (Trial)</option>
                     <option value={0}>Unlimited / Never Expire</option>
                   </select>
-                  <p className="text-[10px] text-[#706E68]">
+                  <p className="text-[10px] text-claude-text-muted">
                     {durationDays > 0 
                       ? `Account will automatically expire on ${new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.` 
                       : 'Account will remain active forever until manually deleted.'}
@@ -334,13 +334,13 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsAddingUser(false)}
-                  className="px-3 py-1.5 rounded-xl bg-[#242320] hover:bg-[#2A2926] text-xs text-[#8C8A82] hover:text-[#ECEBE7] transition-colors"
+                  className="px-3 py-1.5 rounded-xl bg-claude-surface hover:bg-claude-card-hover text-xs text-claude-text-secondary hover:text-claude-text-primary transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-xl bg-[#ECEBE7] hover:bg-white text-black text-xs font-medium transition-colors shadow-sm"
+                  className="px-4 py-1.5 rounded-xl bg-claude-text-primary hover:bg-claude-text-secondary text-claude-bg text-xs font-medium transition-colors shadow-sm"
                 >
                   Save Account & Set Expiration
                 </button>
@@ -349,7 +349,7 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
           )}
 
           {/* List of Authorized Users */}
-          <div className="rounded-2xl bg-[#1C1B19] border border-[#2B2A27] divide-y divide-[#262522] overflow-hidden">
+          <div className="rounded-2xl bg-claude-card border border-claude-border divide-y divide-claude-border-subtle overflow-hidden">
           {authorizedUsers.map((acc) => {
             const isPassVisible = showPasswords[acc.id];
             const isCopied = copiedAccountEmail === acc.email;
@@ -359,7 +359,7 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
               <div key={acc.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between text-xs gap-3">
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-[#ECEBE7] truncate">{acc.name}</span>
+                    <span className="font-medium text-claude-text-primary truncate">{acc.name}</span>
                     <span className={`text-[9px] px-1.5 py-0.2 rounded font-semibold uppercase ${
                       acc.plan === 'max'
                         ? 'bg-purple-950/80 text-purple-300 border border-purple-800/60 shadow-xs'
@@ -393,17 +393,17 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
                     )}
                   </div>
 
-                  <div className="text-[11px] text-[#8C8A82] font-mono truncate">{acc.email}</div>
+                  <div className="text-[11px] text-claude-text-secondary font-mono truncate">{acc.email}</div>
 
-                  <div className="flex items-center gap-2 pt-0.5 text-[11px] text-[#706E68]">
+                  <div className="flex items-center gap-2 pt-0.5 text-[11px] text-claude-text-muted">
                     <span>Password:</span>
-                    <span className="font-mono text-[#B4B3AD]">
+                    <span className="font-mono text-claude-text-secondary">
                       {isPassVisible ? acc.password : '••••••••••••'}
                     </span>
                     <button
                       type="button"
                       onClick={() => setShowPasswords(prev => ({ ...prev, [acc.id]: !prev[acc.id] }))}
-                      className="text-[#7E7C76] hover:text-[#ECEBE7] p-0.5"
+                      className="text-claude-text-muted hover:text-claude-text-primary p-0.5"
                       title={isPassVisible ? "Hide password" : "Show password"}
                     >
                       {isPassVisible ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -415,7 +415,7 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
                 <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
                   <button
                     onClick={() => extendUserDuration(acc.id, 30)}
-                    className="px-2 py-1 rounded-lg bg-[#242320] hover:bg-[#2C2A27] text-[10px] text-[#A5A39C] hover:text-[#DA7756] border border-[#33312E] transition-colors flex items-center gap-0.5"
+                    className="px-2 py-1 rounded-lg bg-claude-surface hover:bg-claude-card-hover text-[10px] text-claude-text-secondary hover:text-[#DA7756] border border-claude-border transition-colors flex items-center gap-0.5"
                     title="Extend user access by 30 days (1 Month)"
                   >
                     <Plus className="w-2.5 h-2.5" />
@@ -424,7 +424,7 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
 
                   <button
                     onClick={() => extendUserDuration(acc.id, 60)}
-                    className="px-2 py-1 rounded-lg bg-[#242320] hover:bg-[#2C2A27] text-[10px] text-[#A5A39C] hover:text-[#DA7756] border border-[#33312E] transition-colors flex items-center gap-0.5"
+                    className="px-2 py-1 rounded-lg bg-claude-surface hover:bg-claude-card-hover text-[10px] text-claude-text-secondary hover:text-[#DA7756] border border-claude-border transition-colors flex items-center gap-0.5"
                     title="Extend user access by 60 days (2 Months)"
                   >
                     <Plus className="w-2.5 h-2.5" />
@@ -433,7 +433,7 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
 
                   <button
                     onClick={() => handleCopyCredentials(acc)}
-                    className="p-1.5 rounded-lg bg-[#242320] hover:bg-[#2C2A27] text-[#8C8A82] hover:text-[#ECEBE7] border border-[#33312E] transition-colors"
+                    className="p-1.5 rounded-lg bg-claude-surface hover:bg-claude-card-hover text-claude-text-secondary hover:text-claude-text-primary border border-claude-border transition-colors"
                     title="Copy full login credentials & expiration info to clipboard"
                   >
                     {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -461,10 +461,10 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
     )}
 
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <div className="text-xs font-medium text-[#ECEBE7]">Logout of all devices</div>
-            <p className="text-[11px] text-[#8C8A82]">Invalidate all active session tokens</p>
+            <div className="text-xs font-medium text-claude-text-primary">Logout of all devices</div>
+            <p className="text-[11px] text-claude-text-secondary">Invalidate all active session tokens</p>
           </div>
           <button
             onClick={() => {
@@ -472,16 +472,16 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
                 alert('Logged out from all remote devices.');
               }
             }}
-            className="px-3 py-1.5 rounded-xl bg-[#242320] hover:bg-[#2A2926] text-xs font-medium text-[#ECEBE7] border border-[#33312E] transition-colors"
+            className="px-3 py-1.5 rounded-xl bg-claude-surface hover:bg-claude-card-hover text-xs font-medium text-claude-text-primary border border-claude-border transition-colors"
           >
             Log out
           </button>
         </div>
 
-        <div className="flex items-center justify-between p-4 rounded-2xl bg-[#1C1B19] border border-red-900/30">
+        <div className="flex items-center justify-between p-4 rounded-2xl bg-claude-card border border-red-900/30">
           <div>
             <div className="text-xs font-medium text-red-300">Delete your account</div>
-            <p className="text-[11px] text-[#8C8A82]">Permanently delete account and all conversation data</p>
+            <p className="text-[11px] text-claude-text-secondary">Permanently delete account and all conversation data</p>
           </div>
           <button
             onClick={() => {
@@ -497,10 +497,10 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
         </div>
       </div>
 
-      <div className="p-4 rounded-2xl bg-[#1C1B19] border border-[#2B2A27] space-y-1.5">
-        <div className="text-xs font-medium text-[#ECEBE7]">Organization ID</div>
-        <div className="flex items-center justify-between bg-[#141413] px-3 py-2 rounded-xl border border-[#262522]">
-          <span className="font-mono text-xs text-[#9C9A92]">org-claude-9824f1e09c8</span>
+      <div className="p-4 rounded-2xl bg-claude-card border border-claude-border space-y-1.5">
+        <div className="text-xs font-medium text-claude-text-primary">Organization ID</div>
+        <div className="flex items-center justify-between bg-claude-bg px-3 py-2 rounded-xl border border-claude-border-subtle">
+          <span className="font-mono text-xs text-claude-text-secondary">org-claude-9824f1e09c8</span>
           <button
             onClick={handleCopyOrgId}
             className="flex items-center gap-1 text-[11px] text-[#DA7756] hover:underline"
@@ -521,33 +521,33 @@ export const SettingsAccount: React.FC<SettingsTabProps> = ({
       </div>
 
       <div className="space-y-2">
-        <h4 className="text-xs font-semibold text-[#ECEBE7]">Trusted devices</h4>
-        <p className="text-[11px] text-[#8C8A82]">
+        <h4 className="text-xs font-semibold text-claude-text-primary">Trusted devices</h4>
+        <p className="text-[11px] text-claude-text-secondary">
           Devices authorized for persistent passkey authentication and local tool dispatch.
         </p>
-        <div className="p-4 rounded-2xl bg-[#1C1B19] border border-[#2B2A27] text-center text-xs text-[#706E68]">
+        <div className="p-4 rounded-2xl bg-claude-card border border-claude-border text-center text-xs text-claude-text-muted">
           No trusted devices
         </div>
       </div>
 
       <div className="space-y-2">
-        <h4 className="text-xs font-semibold text-[#ECEBE7]">Active sessions</h4>
-        <div className="rounded-2xl bg-[#1C1B19] border border-[#2B2A27] overflow-hidden text-xs">
-          <div className="grid grid-cols-4 p-3 bg-[#161514] border-b border-[#242320] text-[11px] font-semibold text-[#706E68]">
+        <h4 className="text-xs font-semibold text-claude-text-primary">Active sessions</h4>
+        <div className="rounded-2xl bg-claude-card border border-claude-border overflow-hidden text-xs">
+          <div className="grid grid-cols-4 p-3 bg-claude-bg border-b border-claude-border-subtle text-[11px] font-semibold text-claude-text-muted">
             <span>Device</span>
             <span>Location</span>
             <span>Created</span>
             <span>Updated</span>
           </div>
-          <div className="grid grid-cols-4 p-3 items-center border-b border-[#201F1D] text-[#ECEBE7]">
+          <div className="grid grid-cols-4 p-3 items-center border-b border-claude-border-subtle text-claude-text-primary">
             <div className="flex items-center gap-1.5">
               <Laptop className="w-3.5 h-3.5 text-[#DA7756]" />
               <span className="font-medium">Chrome</span>
               <span className="text-[9px] px-1.5 py-0.2 rounded bg-sky-950/70 border border-sky-800/60 text-sky-400">Current</span>
             </div>
-            <span className="text-[#8C8A82]">Local</span>
-            <span className="text-[#7E7C76]">Today</span>
-            <span className="text-[#7E7C76]">Just now</span>
+            <span className="text-claude-text-secondary">Local</span>
+            <span className="text-claude-text-muted">Today</span>
+            <span className="text-claude-text-muted">Just now</span>
           </div>
         </div>
       </div>

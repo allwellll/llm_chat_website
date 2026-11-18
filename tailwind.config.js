@@ -9,22 +9,22 @@ export default {
     extend: {
       colors: {
         claude: {
-          bg: '#191816',
-          sidebar: '#141312',
-          surface: '#1f1e1c',
-          card: '#22211f',
-          'card-hover': '#2a2926',
-          input: '#252422',
-          border: '#33312e',
-          'border-subtle': '#282724',
+          bg: 'rgb(var(--bg-primary) / <alpha-value>)',
+          sidebar: 'rgb(var(--bg-secondary) / <alpha-value>)',
+          surface: 'rgb(var(--bg-surface) / <alpha-value>)',
+          card: 'rgb(var(--bg-card) / <alpha-value>)',
+          'card-hover': 'rgb(var(--bg-card-hover) / <alpha-value>)',
+          input: 'rgb(var(--bg-input) / <alpha-value>)',
+          border: 'rgb(var(--border-color) / <alpha-value>)',
+          'border-subtle': 'rgb(var(--border-subtle) / <alpha-value>)',
           coral: '#DA7756',
           'coral-hover': '#C86545',
           'coral-muted': 'rgba(218, 119, 86, 0.15)',
           'coral-border': 'rgba(218, 119, 86, 0.35)',
           text: {
-            primary: '#ECEBE7',
-            secondary: '#B4B3AD',
-            muted: '#7E7C76',
+            primary: 'rgb(var(--text-primary) / <alpha-value>)',
+            secondary: 'rgb(var(--text-secondary) / <alpha-value>)',
+            muted: 'rgb(var(--text-muted) / <alpha-value>)',
             dark: '#1C1B18'
           },
           light: {

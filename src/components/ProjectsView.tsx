@@ -139,9 +139,11 @@ export const ProjectsView: React.FC = () => {
   }, [projects, searchQuery, sortBy]);
 
   // Derive selected project from activeProject if on detail view
-  const currentProject = activeProject
+  const selectedProject = activeProject
     ? projects.find((p) => p.id === activeProject.id) || null
     : null;
+  // A change-feed summary is not an editable project, even if a previous selection was loaded.
+  const currentProject = selectedProject?._historyUnloaded ? null : selectedProject;
 
   // Conversations in current project
   const projectConversations = currentProject
@@ -319,9 +321,10 @@ export const ProjectsView: React.FC = () => {
   // ─────────────────────────────────────────────────────────────
   // 1. PROJECT DETAIL VIEW (Matching Image 1)
   // ─────────────────────────────────────────────────────────────
+  if (currentProject?._historyUnloaded) return <div className="p-8">正在加载项目… <button onClick={()=>setActiveProject(currentProject)}>重试</button></div>;
   if (currentProject) {
     return (
-      <div className="flex-1 flex flex-col h-full bg-[#141413] text-[#ECEBE7] overflow-y-auto select-none">
+      <div className="flex-1 flex flex-col h-full bg-claude-bg text-claude-text-primary overflow-y-auto select-none">
         {/* Hidden file input */}
         <input
           ref={fileInputRef}
@@ -337,12 +340,12 @@ export const ProjectsView: React.FC = () => {
           <div className="flex items-center gap-2 text-xs">
             <button
               onClick={() => setActiveProject(null)}
-              className="text-[#8C8A82] hover:text-[#ECEBE7] transition-colors font-normal"
+              className="text-claude-text-secondary hover:text-claude-text-primary transition-colors font-normal"
             >
               Projects
             </button>
-            <span className="text-[#555450]">/</span>
-            <span className="text-[#ECEBE7] font-medium truncate max-w-[240px]">
+            <span className="text-claude-text-muted">/</span>
+            <span className="text-claude-text-primary font-medium truncate max-w-[240px]">
               {currentProject.name}
             </span>
           </div>
@@ -350,7 +353,7 @@ export const ProjectsView: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => openEditModal(currentProject)}
-              className="p-1.5 rounded-lg text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#201F1D] transition-colors"
+              className="p-1.5 rounded-lg text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
               title="Pin project"
             >
               <Pin className="w-4 h-4 rotate-45" />
@@ -358,25 +361,25 @@ export const ProjectsView: React.FC = () => {
             <div className="relative" ref={projectMenuRef}>
               <button
                 onClick={() => setIsProjectOptionsOpen(!isProjectOptionsOpen)}
-                className="p-1.5 rounded-lg text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#201F1D] transition-colors"
+                className="p-1.5 rounded-lg text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
                 title="Project options"
               >
                 <MoreVertical className="w-4 h-4" />
               </button>
 
               {isProjectOptionsOpen && (
-                <div className="absolute right-0 top-full mt-1 w-44 bg-[#1C1B19] border border-[#2B2A27] rounded-xl shadow-2xl p-1 z-50 text-xs">
+                <div className="absolute right-0 top-full mt-1 w-44 bg-claude-card border border-claude-border rounded-xl shadow-2xl p-1 z-50 text-xs">
                   <button
                     onClick={() => {
                       openEditModal(currentProject);
                       setIsProjectOptionsOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#242320] text-left text-[#ECEBE7]"
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-claude-surface text-left text-claude-text-primary"
                   >
-                    <Edit2 className="w-3.5 h-3.5 text-[#8C8A82]" />
+                    <Edit2 className="w-3.5 h-3.5 text-claude-text-secondary" />
                     <span>Edit details</span>
                   </button>
-                  <div className="my-0.5 border-t border-[#262522]" />
+                  <div className="my-0.5 border-t border-claude-border-subtle" />
                   <button
                     onClick={(e) => {
                       setIsProjectOptionsOpen(false);
@@ -399,11 +402,11 @@ export const ProjectsView: React.FC = () => {
           <div className="flex-1 w-full max-w-2xl space-y-6 pt-2">
             {/* Big Project Title */}
             <div>
-              <h1 className="font-serif text-3xl sm:text-4xl text-[#ECEBE7] font-normal tracking-tight">
+              <h1 className="font-serif text-3xl sm:text-4xl text-claude-text-primary font-normal tracking-tight">
                 {currentProject.name}
               </h1>
               {currentProject.description && (
-                <p className="text-xs text-[#8C8A82] mt-1.5 leading-relaxed max-w-xl">
+                <p className="text-xs text-claude-text-secondary mt-1.5 leading-relaxed max-w-xl">
                   {currentProject.description}
                 </p>
               )}
@@ -417,7 +420,7 @@ export const ProjectsView: React.FC = () => {
             {/* Recents List (matching Claude reference image) */}
             {projectConversations.length > 0 ? (
               <div className="space-y-1.5 pt-2" ref={convContextMenuRef}>
-                <div className="text-[13px] text-[#8C8A82] font-normal px-2 pb-1">
+                <div className="text-[13px] text-claude-text-secondary font-normal px-2 pb-1">
                   Recents
                 </div>
 
@@ -430,7 +433,7 @@ export const ProjectsView: React.FC = () => {
                       <div
                         key={conv.id}
                         onClick={() => handleOpenExistingChat(conv.id)}
-                        className="group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-[14px] text-[#ECEBE7] hover:bg-[#1E1D1B] cursor-pointer transition-colors"
+                        className="group relative flex items-center justify-between px-3 py-2.5 rounded-xl text-[14px] text-claude-text-primary hover:bg-claude-card cursor-pointer transition-colors"
                       >
                         {isRenaming ? (
                           <form
@@ -449,15 +452,15 @@ export const ProjectsView: React.FC = () => {
                               value={renameConvTitle}
                               onChange={(e) => setRenameConvTitle(e.target.value)}
                               autoFocus
-                              className="w-full bg-[#161514] text-xs text-[#ECEBE7] px-2.5 py-1 rounded-lg border border-[#DA7756] outline-none"
+                              className="w-full bg-claude-bg text-xs text-claude-text-primary px-2.5 py-1 rounded-lg border border-[#DA7756] outline-none"
                               onKeyDown={(e) => {
                                 if (e.key === 'Escape') setRenamingConvId(null);
                               }}
                             />
-                            <button type="submit" className="p-1 text-[#DA7756] hover:text-white">
+                            <button type="submit" className="p-1 text-[#DA7756] hover:text-claude-text-primary">
                               <Check className="w-3.5 h-3.5" />
                             </button>
-                            <button type="button" onClick={() => setRenamingConvId(null)} className="p-1 text-[#8C8A82]">
+                            <button type="button" onClick={() => setRenamingConvId(null)} className="p-1 text-claude-text-secondary">
                               <X className="w-3.5 h-3.5" />
                             </button>
                           </form>
@@ -465,7 +468,7 @@ export const ProjectsView: React.FC = () => {
                           <>
                             <div className="flex items-center gap-2.5 min-w-0">
                               {conv.isStarred && <Pin className="w-3.5 h-3.5 text-[#DA7756] shrink-0 fill-[#DA7756]" />}
-                              <span className="truncate max-w-lg font-normal text-[#E2E1DD] group-hover:text-white transition-colors">
+                              <span className="truncate max-w-lg font-normal text-claude-text-primary group-hover:text-claude-text-primary transition-colors">
                                 {conv.title}
                               </span>
                             </div>
@@ -477,8 +480,8 @@ export const ProjectsView: React.FC = () => {
                                   setActiveContextMenuConvId(isMenuOpen ? null : conv.id);
                                   setIsChangeProjectSubmenuOpen(null);
                                 }}
-                                className={`p-1.5 rounded-lg text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#282724] transition-all ${
-                                  isMenuOpen ? 'opacity-100 bg-[#282724] text-[#ECEBE7]' : 'opacity-0 group-hover:opacity-100'
+                                className={`p-1.5 rounded-lg text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-input transition-all ${
+                                  isMenuOpen ? 'opacity-100 bg-claude-input text-claude-text-primary' : 'opacity-0 group-hover:opacity-100'
                                 }`}
                                 aria-label="Chat options"
                               >
@@ -488,7 +491,7 @@ export const ProjectsView: React.FC = () => {
                               {/* Claude Context Menu Popup matching media_1787978327829.png */}
                               {isMenuOpen && (
                                 <div
-                                  className="absolute right-0 top-full mt-1 w-52 bg-[#1C1B19] border border-[#2B2A27] rounded-xl shadow-2xl p-1 z-50 text-[13px] text-[#ECEBE7] animate-in fade-in zoom-in-95 duration-100"
+                                  className="absolute right-0 top-full mt-1 w-52 bg-claude-card border border-claude-border rounded-xl shadow-2xl p-1 z-50 text-[13px] text-claude-text-primary animate-in fade-in zoom-in-95 duration-100"
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   {/* 1. Pin */}
@@ -497,13 +500,13 @@ export const ProjectsView: React.FC = () => {
                                       toggleStarConversation(conv.id);
                                       setActiveContextMenuConvId(null);
                                     }}
-                                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#242320] text-left transition-colors"
+                                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-claude-surface text-left transition-colors"
                                   >
                                     <div className="flex items-center gap-2.5">
-                                      <Pin className={`w-3.5 h-3.5 ${conv.isStarred ? 'text-[#DA7756] fill-[#DA7756]' : 'text-[#8C8A82]'}`} />
+                                      <Pin className={`w-3.5 h-3.5 ${conv.isStarred ? 'text-[#DA7756] fill-[#DA7756]' : 'text-claude-text-secondary'}`} />
                                       <span>{conv.isStarred ? 'Unpin' : 'Pin'}</span>
                                     </div>
-                                    <span className="text-[11px] text-[#706E68]">P</span>
+                                    <span className="text-[11px] text-claude-text-muted">P</span>
                                   </button>
 
                                   {/* 2. Mark as unread */}
@@ -511,13 +514,13 @@ export const ProjectsView: React.FC = () => {
                                     onClick={() => {
                                       setActiveContextMenuConvId(null);
                                     }}
-                                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#242320] text-left transition-colors"
+                                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-claude-surface text-left transition-colors"
                                   >
                                     <div className="flex items-center gap-2.5">
-                                      <EyeOff className="w-3.5 h-3.5 text-[#8C8A82]" />
+                                      <EyeOff className="w-3.5 h-3.5 text-claude-text-secondary" />
                                       <span>Mark as unread</span>
                                     </div>
-                                    <span className="text-[11px] text-[#706E68]">U</span>
+                                    <span className="text-[11px] text-claude-text-muted">U</span>
                                   </button>
 
                                   {/* 3. Rename */}
@@ -527,13 +530,13 @@ export const ProjectsView: React.FC = () => {
                                       setRenameConvTitle(conv.title);
                                       setActiveContextMenuConvId(null);
                                     }}
-                                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#242320] text-left transition-colors"
+                                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-claude-surface text-left transition-colors"
                                   >
                                     <div className="flex items-center gap-2.5">
-                                      <Edit2 className="w-3.5 h-3.5 text-[#8C8A82]" />
+                                      <Edit2 className="w-3.5 h-3.5 text-claude-text-secondary" />
                                       <span>Rename</span>
                                     </div>
-                                    <span className="text-[11px] text-[#706E68]">R</span>
+                                    <span className="text-[11px] text-claude-text-muted">R</span>
                                   </button>
 
                                   {/* 4. Change project › */}
@@ -542,19 +545,19 @@ export const ProjectsView: React.FC = () => {
                                       onClick={() => {
                                         setIsChangeProjectSubmenuOpen(isChangeProjectSubmenuOpen === conv.id ? null : conv.id);
                                       }}
-                                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-[#242320] text-left transition-colors"
+                                      className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-claude-surface text-left transition-colors"
                                     >
                                       <div className="flex items-center gap-2.5">
-                                        <ClaudeProjectsIcon size={14} color="#8C8A82" />
+                                        <ClaudeProjectsIcon size={14} color="currentColor" />
                                         <span>Change project</span>
                                       </div>
-                                      <ChevronRight className="w-3.5 h-3.5 text-[#706E68]" />
+                                      <ChevronRight className="w-3.5 h-3.5 text-claude-text-muted" />
                                     </button>
 
                                     {/* Submenu for target projects */}
                                     {isChangeProjectSubmenuOpen === conv.id && (
-                                      <div className="absolute right-full top-0 mr-1.5 w-48 bg-[#1C1B19] border border-[#2B2A27] rounded-xl shadow-2xl p-1 z-50 text-xs">
-                                        <div className="px-2.5 py-1.5 text-[11px] text-[#706E68] border-b border-[#262522]">Move to project</div>
+                                      <div className="absolute right-full top-0 mr-1.5 w-48 bg-claude-card border border-claude-border rounded-xl shadow-2xl p-1 z-50 text-xs">
+                                        <div className="px-2.5 py-1.5 text-[11px] text-claude-text-muted border-b border-claude-border-subtle">Move to project</div>
                                         <div className="max-h-48 overflow-y-auto space-y-0.5 py-1">
                                           {projects.filter(p => p.id !== currentProject.id).map(p => (
                                             <button
@@ -564,14 +567,14 @@ export const ProjectsView: React.FC = () => {
                                                 setActiveContextMenuConvId(null);
                                                 setIsChangeProjectSubmenuOpen(null);
                                               }}
-                                              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-[#242320] text-left truncate text-[#ECEBE7]"
+                                              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-claude-surface text-left truncate text-claude-text-primary"
                                             >
-                                              <ClaudeProjectsIcon size={13} color="#8C8A82" className="shrink-0" />
+                                              <ClaudeProjectsIcon size={13} color="currentColor" className="shrink-0" />
                                               <span className="truncate">{p.name}</span>
                                             </button>
                                           ))}
                                           {projects.filter(p => p.id !== currentProject.id).length === 0 && (
-                                            <div className="px-2.5 py-2 text-[11px] text-[#706E68] text-center">No other projects</div>
+                                            <div className="px-2.5 py-2 text-[11px] text-claude-text-muted text-center">No other projects</div>
                                           )}
                                         </div>
                                       </div>
@@ -584,13 +587,13 @@ export const ProjectsView: React.FC = () => {
                                       moveConversationToProject(conv.id, undefined);
                                       setActiveContextMenuConvId(null);
                                     }}
-                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-[#242320] text-left transition-colors"
+                                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-claude-surface text-left transition-colors"
                                   >
-                                    <FolderMinus className="w-3.5 h-3.5 text-[#8C8A82]" />
+                                    <FolderMinus className="w-3.5 h-3.5 text-claude-text-secondary" />
                                     <span>Remove from project</span>
                                   </button>
 
-                                  <div className="my-1 border-t border-[#262522]" />
+                                  <div className="my-1 border-t border-claude-border-subtle" />
 
                                   {/* 6. Delete */}
                                   <button
@@ -619,13 +622,13 @@ export const ProjectsView: React.FC = () => {
             ) : (
               /* Central Claude Knowledge Helper (when no recents yet) */
               <div className="flex flex-col items-center justify-center py-10 text-center space-y-3 max-w-md mx-auto">
-                <div className="w-9 h-9 rounded-full bg-[#1C1B19] border border-[#2B2A27] flex items-center justify-center text-[#8C8A82]">
+                <div className="w-9 h-9 rounded-full bg-claude-card border border-claude-border flex items-center justify-center text-claude-text-secondary">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
                     <path d="M8 12h.01M12 12h.01M16 12h.01" strokeWidth="2.5"/>
                   </svg>
                 </div>
-                <p className="text-xs text-[#8C8A82] max-w-xs leading-relaxed">
+                <p className="text-xs text-claude-text-secondary max-w-xs leading-relaxed">
                   Claude references the same knowledge every time you talk to it in this project.
                 </p>
               </div>
@@ -634,7 +637,7 @@ export const ProjectsView: React.FC = () => {
 
           {/* Right Column: Instructions & Context Card (matching Image 1) */}
           <div className="w-full lg:w-80 shrink-0 space-y-4">
-            <div className="bg-[#181715] border border-[#262522] rounded-2xl p-4 space-y-5 shadow-sm">
+            <div className="bg-claude-bg border border-claude-border-subtle rounded-2xl p-4 space-y-5 shadow-sm">
               {/* 1. Instructions Section */}
               <div className="space-y-2">
                 <div
@@ -644,7 +647,7 @@ export const ProjectsView: React.FC = () => {
                   }}
                   className="flex items-center justify-between cursor-pointer group select-none"
                 >
-                  <span className="text-xs font-medium text-[#ECEBE7] group-hover:text-white transition-colors">
+                  <span className="text-xs font-medium text-claude-text-primary group-hover:text-claude-text-primary transition-colors">
                     Instructions
                   </span>
                   <button
@@ -653,10 +656,10 @@ export const ProjectsView: React.FC = () => {
                       setInstructionsDraft(currentProject.customInstructions || '');
                       setIsEditingInstructions(true);
                     }}
-                    className="p-1 rounded-lg text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#22211F] transition-colors"
+                    className="p-1 rounded-lg text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
                     title="Edit instructions"
                   >
-                    <Plus className="w-3.5 h-3.5 text-[#8C8A82]" />
+                    <Plus className="w-3.5 h-3.5 text-claude-text-secondary" />
                   </button>
                 </div>
 
@@ -666,7 +669,7 @@ export const ProjectsView: React.FC = () => {
                       setInstructionsDraft(currentProject.customInstructions || '');
                       setIsEditingInstructions(true);
                     }}
-                    className="p-3 rounded-xl bg-[#131211] border border-[#201F1D] hover:border-[#2C2B28] cursor-pointer text-xs text-[#B4B3AD] font-mono leading-relaxed max-h-32 overflow-y-auto"
+                    className="p-3 rounded-xl bg-claude-bg border border-claude-border-subtle hover:border-claude-border cursor-pointer text-xs text-claude-text-secondary font-mono leading-relaxed max-h-32 overflow-y-auto"
                   >
                     {currentProject.customInstructions}
                   </div>
@@ -676,9 +679,9 @@ export const ProjectsView: React.FC = () => {
                       setInstructionsDraft('');
                       setIsEditingInstructions(true);
                     }}
-                    className="cursor-pointer hover:bg-[#1E1D1B] p-1.5 -mx-1.5 rounded-lg transition-colors group"
+                    className="cursor-pointer hover:bg-claude-card p-1.5 -mx-1.5 rounded-lg transition-colors group"
                   >
-                    <p className="text-[11px] text-[#7E7C76] group-hover:text-[#A5A39C] leading-relaxed">
+                    <p className="text-[11px] text-claude-text-muted group-hover:text-claude-text-secondary leading-relaxed">
                       Add instructions to tailor Claude's responses
                     </p>
                   </div>
@@ -686,18 +689,18 @@ export const ProjectsView: React.FC = () => {
               </div>
 
               {/* Divider */}
-              <div className="border-t border-[#22211F]" />
+              <div className="border-t border-claude-border-subtle" />
 
               {/* 2. Context Section (matching Image 1) */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[#ECEBE7]">Context</span>
+                  <span className="text-xs font-medium text-claude-text-primary">Context</span>
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-1 rounded-lg text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#22211F] transition-colors"
+                    className="p-1 rounded-lg text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
                     title="Add files"
                   >
-                    <Plus className="w-3.5 h-3.5 text-[#8C8A82]" />
+                    <Plus className="w-3.5 h-3.5 text-claude-text-secondary" />
                   </button>
                 </div>
 
@@ -705,10 +708,10 @@ export const ProjectsView: React.FC = () => {
                   /* Empty state matching Image 1: dark container with document illustration */
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="bg-[#131211] border border-[#201F1D] hover:border-[#2C2B28] rounded-xl p-6 flex flex-col items-center justify-center text-center space-y-3 cursor-pointer transition-all group"
+                    className="bg-claude-bg border border-claude-border-subtle hover:border-claude-border rounded-xl p-6 flex flex-col items-center justify-center text-center space-y-3 cursor-pointer transition-all group"
                   >
                     {/* Document stack illustration */}
-                    <div className="w-12 h-10 relative flex items-center justify-center text-[#555450] group-hover:text-[#8C8A82] transition-colors">
+                    <div className="w-12 h-10 relative flex items-center justify-center text-claude-text-muted group-hover:text-claude-text-secondary transition-colors">
                       <svg width="40" height="34" viewBox="0 0 40 34" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <rect x="2" y="2" width="22" height="26" rx="3" fill="#1C1B19" stroke="currentColor" strokeWidth="1.5" />
                         <rect x="9" y="4" width="22" height="26" rx="3" fill="#22211F" stroke="currentColor" strokeWidth="1.5" />
@@ -717,7 +720,7 @@ export const ProjectsView: React.FC = () => {
                       </svg>
                     </div>
 
-                    <p className="text-[11px] text-[#8C8A82] max-w-[190px] leading-relaxed">
+                    <p className="text-[11px] text-claude-text-secondary max-w-[190px] leading-relaxed">
                       Add PDFs, documents, or other text to reference in this project.
                     </p>
                   </div>
@@ -728,15 +731,15 @@ export const ProjectsView: React.FC = () => {
                       {currentProject.files.map((file) => (
                         <div
                           key={file.id}
-                          className="group p-2.5 rounded-xl bg-[#131211] border border-[#201F1D] hover:border-[#2C2B28] flex items-center justify-between text-xs"
+                          className="group p-2.5 rounded-xl bg-claude-bg border border-claude-border-subtle hover:border-claude-border flex items-center justify-between text-xs"
                         >
                           <div className="flex items-center gap-2 min-w-0 mr-2">
                             <div className="shrink-0">{getFileIcon(file)}</div>
-                            <span className="text-[11px] text-[#ECEBE7] truncate">{file.name}</span>
+                            <span className="text-[11px] text-claude-text-primary truncate">{file.name}</span>
                           </div>
                           <button
                             onClick={(e) => handleRemoveFile(file.id, e)}
-                            className="p-1 rounded text-[#7E7C76] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                            className="p-1 rounded text-claude-text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                             title="Remove file"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -747,7 +750,7 @@ export const ProjectsView: React.FC = () => {
 
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full py-1.5 rounded-lg bg-[#131211] hover:bg-[#1E1D1B] text-[11px] text-[#8C8A82] hover:text-[#ECEBE7] border border-[#201F1D] transition-colors flex items-center justify-center gap-1"
+                      className="w-full py-1.5 rounded-lg bg-claude-bg hover:bg-claude-card text-[11px] text-claude-text-secondary hover:text-claude-text-primary border border-claude-border-subtle transition-colors flex items-center justify-center gap-1"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Add more files</span>
@@ -763,24 +766,24 @@ export const ProjectsView: React.FC = () => {
         {previewFile && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
             <div
-              className="w-full max-w-2xl bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-xs"
+              className="w-full max-w-2xl bg-claude-card border border-claude-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-xs"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between p-4 border-b border-[#262522]">
+              <div className="flex items-center justify-between p-4 border-b border-claude-border-subtle">
                 <div className="flex items-center gap-2 truncate">
                   {getFileIcon(previewFile)}
-                  <span className="font-semibold text-xs text-[#ECEBE7] truncate">{previewFile.name}</span>
+                  <span className="font-semibold text-xs text-claude-text-primary truncate">{previewFile.name}</span>
                 </div>
-                <button onClick={() => setPreviewFile(null)} className="text-[#7E7C76] hover:text-[#ECEBE7] p-1 rounded">
+                <button onClick={() => setPreviewFile(null)} className="text-claude-text-muted hover:text-claude-text-primary p-1 rounded">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 bg-[#141413]">
+              <div className="flex-1 overflow-y-auto p-4 bg-claude-bg">
                 {previewFile.dataUrl ? (
                   <img src={previewFile.dataUrl} alt={previewFile.name} className="max-w-full rounded-xl mx-auto" />
                 ) : (
-                  <pre className="text-xs font-mono text-[#B4B3AD] whitespace-pre-wrap leading-relaxed">
+                  <pre className="text-xs font-mono text-claude-text-secondary whitespace-pre-wrap leading-relaxed">
                     {previewFile.textContent || 'No text content in file.'}
                   </pre>
                 )}
@@ -793,41 +796,41 @@ export const ProjectsView: React.FC = () => {
         {isEditProjectModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75">
             <div
-              className="w-full max-w-md bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4 text-xs"
+              className="w-full max-w-md bg-claude-card border border-claude-border rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4 text-xs"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between pb-2 border-b border-[#262522]">
-                <h3 className="text-xs font-semibold text-[#ECEBE7]">Edit Project</h3>
-                <button onClick={() => setIsEditProjectModalOpen(false)} className="text-[#7E7C76] hover:text-[#ECEBE7]">
+              <div className="flex items-center justify-between pb-2 border-b border-claude-border-subtle">
+                <h3 className="text-xs font-semibold text-claude-text-primary">Edit Project</h3>
+                <button onClick={() => setIsEditProjectModalOpen(false)} className="text-claude-text-muted hover:text-claude-text-primary">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
               <form onSubmit={handleUpdateProject} className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-[#ECEBE7] mb-1">Project Name</label>
+                  <label className="block text-xs font-medium text-claude-text-primary mb-1">Project Name</label>
                   <input
                     type="text"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
                     required
-                    className="w-full bg-[#141413] border border-[#282724] rounded-xl px-3.5 py-2 text-xs text-[#ECEBE7] focus:outline-none focus:border-[#DA7756]"
+                    className="w-full bg-claude-bg border border-claude-border-subtle rounded-xl px-3.5 py-2 text-xs text-claude-text-primary focus:outline-none focus:border-[#DA7756]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[#ECEBE7] mb-1">Description</label>
+                  <label className="block text-xs font-medium text-claude-text-primary mb-1">Description</label>
                   <input
                     type="text"
                     value={projectDesc}
                     onChange={(e) => setProjectDesc(e.target.value)}
-                    className="w-full bg-[#141413] border border-[#282724] rounded-xl px-3.5 py-2 text-xs text-[#ECEBE7] focus:outline-none focus:border-[#DA7756]"
+                    className="w-full bg-claude-bg border border-claude-border-subtle rounded-xl px-3.5 py-2 text-xs text-claude-text-primary focus:outline-none focus:border-[#DA7756]"
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
                   <button
                     type="button"
                     onClick={() => setIsEditProjectModalOpen(false)}
-                    className="px-3.5 py-1.5 rounded-xl text-[#8C8A82] hover:bg-[#201F1D]"
+                    className="px-3.5 py-1.5 rounded-xl text-claude-text-secondary hover:bg-claude-surface"
                   >
                     Cancel
                   </button>
@@ -862,17 +865,17 @@ export const ProjectsView: React.FC = () => {
 
             {/* Dialog Card (matching Claude screenshot) */}
             <div
-              className="relative z-10 w-full max-w-2xl bg-[#1E1E1C] border border-[#2E2E2B] rounded-2xl shadow-2xl flex flex-col overflow-hidden select-text"
+              className="relative z-10 w-full max-w-2xl bg-claude-card border border-claude-border rounded-2xl shadow-2xl flex flex-col overflow-hidden select-text"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
               <div className="px-6 pt-6 pb-2 space-y-1.5">
-                <h2 className="text-base sm:text-lg font-medium text-[#ECEBE7] tracking-tight">
+                <h2 className="text-base sm:text-lg font-medium text-claude-text-primary tracking-tight">
                   Set project instructions
                 </h2>
-                <p className="text-xs text-[#9C9A92] leading-relaxed">
+                <p className="text-xs text-claude-text-secondary leading-relaxed">
                   Provide Claude with relevant instructions and information for chats within{' '}
-                  <span className="text-[#ECEBE7] font-medium">{currentProject.name}</span>.{' '}
+                  <span className="text-claude-text-primary font-medium">{currentProject.name}</span>.{' '}
                   This will work alongside your{' '}
                   <span className="text-[#5B8EE5] hover:text-[#78A6F0] underline cursor-pointer transition-colors">
                     profile instructions
@@ -888,7 +891,7 @@ export const ProjectsView: React.FC = () => {
                   value={instructionsDraft}
                   onChange={(e) => setInstructionsDraft(e.target.value)}
                   placeholder="Think step by step and show reasoning for complex problems. Use specific examples."
-                  className="w-full h-64 bg-[#252523] border border-[#343430] focus:border-[#4E4E48] rounded-xl p-4 text-xs sm:text-[13px] text-[#ECEBE7] placeholder-[#73726D] outline-none resize-none leading-relaxed transition-colors font-sans"
+                  className="w-full h-64 bg-claude-input border border-claude-border focus:border-claude-border rounded-xl p-4 text-xs sm:text-[13px] text-claude-text-primary placeholder-claude-text-muted outline-none resize-none leading-relaxed transition-colors font-sans"
                   autoFocus
                 />
               </div>
@@ -898,7 +901,7 @@ export const ProjectsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsEditingInstructions(false)}
-                  className="px-4 py-2 rounded-xl bg-[#282725] hover:bg-[#32312E] text-xs font-medium text-[#ECEBE7] transition-colors"
+                  className="px-4 py-2 rounded-xl bg-claude-input hover:bg-claude-card-hover text-xs font-medium text-claude-text-primary transition-colors"
                 >
                   Cancel
                 </button>
@@ -908,7 +911,7 @@ export const ProjectsView: React.FC = () => {
                     handleSaveInstructions(instructionsDraft);
                     setIsEditingInstructions(false);
                   }}
-                  className="px-4 py-2 rounded-xl bg-[#8A8985] hover:bg-[#9E9D99] text-xs font-medium text-[#141413] transition-colors shadow-sm font-semibold"
+                  className="px-4 py-2 rounded-xl bg-claude-card-hover hover:bg-claude-card-hover text-xs font-medium text-claude-text-muted transition-colors shadow-sm font-semibold"
                 >
                   Save Instructions
                 </button>
@@ -925,10 +928,10 @@ export const ProjectsView: React.FC = () => {
   // 2. PROJECTS CATALOG / GRID VIEW (When no project is selected)
   // ─────────────────────────────────────────────────────────────
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#141413] text-[#ECEBE7] overflow-y-auto select-none">
+    <div className="flex-1 flex flex-col h-full bg-claude-bg text-claude-text-primary overflow-y-auto select-none">
       {/* Top Header matching Image 2 */}
       <div className="flex items-center justify-between px-8 pt-8 pb-4 max-w-5xl mx-auto w-full">
-        <h1 className="font-serif text-3xl font-medium tracking-tight text-[#ECEBE7]">
+        <h1 className="font-serif text-3xl font-medium tracking-tight text-claude-text-primary">
           Projects
         </h1>
 
@@ -936,21 +939,21 @@ export const ProjectsView: React.FC = () => {
           {/* Search button / input */}
           {isSearchOpen ? (
             <div className="relative w-52">
-              <Search className="w-3.5 h-3.5 text-[#7E7C76] absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-claude-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search projects..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
-                className="w-full bg-[#1C1B19] text-xs text-[#ECEBE7] pl-8 pr-8 py-2 rounded-xl border border-[#2B2A27] focus:outline-none focus:border-[#DA7756]"
+                className="w-full bg-claude-card text-xs text-claude-text-primary pl-8 pr-8 py-2 rounded-xl border border-claude-border focus:outline-none focus:border-[#DA7756]"
               />
               <button
                 onClick={() => {
                   setSearchQuery('');
                   setIsSearchOpen(false);
                 }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7E7C76] hover:text-[#ECEBE7]"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-claude-text-muted hover:text-claude-text-primary"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -958,7 +961,7 @@ export const ProjectsView: React.FC = () => {
           ) : (
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-9 h-9 rounded-xl bg-[#1C1B19] hover:bg-[#22211F] border border-[#2B2A27] flex items-center justify-center text-[#8C8A82] hover:text-[#ECEBE7] transition-colors"
+              className="w-9 h-9 rounded-xl bg-claude-card hover:bg-claude-surface border border-claude-border flex items-center justify-center text-claude-text-secondary hover:text-claude-text-primary transition-colors"
               title="Search projects"
             >
               <Search className="w-4 h-4" />
@@ -969,15 +972,15 @@ export const ProjectsView: React.FC = () => {
           <div className="relative" ref={sortMenuRef}>
             <button
               onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
-              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#1C1B19] hover:bg-[#22211F] text-xs text-[#ECEBE7] border border-[#2B2A27] transition-colors select-none"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-claude-card hover:bg-claude-surface text-xs text-claude-text-primary border border-claude-border transition-colors select-none"
             >
-              <span className="text-[#8C8A82]">Sort by</span>
+              <span className="text-claude-text-secondary">Sort by</span>
               <span>{sortLabels[sortBy]}</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-[#7E7C76] transition-transform ${isSortMenuOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3.5 h-3.5 text-claude-text-muted transition-transform ${isSortMenuOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isSortMenuOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-44 bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-1.5 z-50 text-xs text-[#ECEBE7] space-y-0.5 select-none">
+              <div className="absolute right-0 top-full mt-1.5 w-44 bg-claude-card border border-claude-border rounded-2xl shadow-2xl p-1.5 z-50 text-xs text-claude-text-primary space-y-0.5 select-none">
                 {(['last-updated', 'date-created', 'alphabetical', 'group-type'] as SortOption[]).map((opt) => (
                   <button
                     key={opt}
@@ -987,8 +990,8 @@ export const ProjectsView: React.FC = () => {
                     }}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-colors ${
                       sortBy === opt
-                        ? 'bg-[#262522] text-[#ECEBE7] font-medium'
-                        : 'text-[#9C9A92] hover:bg-[#22211F] hover:text-[#ECEBE7]'
+                        ? 'bg-claude-input text-claude-text-primary font-medium'
+                        : 'text-claude-text-secondary hover:bg-claude-surface hover:text-claude-text-primary'
                     }`}
                   >
                     <span>{sortLabels[opt]}</span>
@@ -1021,7 +1024,7 @@ export const ProjectsView: React.FC = () => {
         {projects.length === 0 ? (
           /* Empty State */
           <div className="flex flex-col items-center text-center space-y-4 max-w-sm my-auto">
-            <div className="w-16 h-16 relative flex items-center justify-center text-[#9E9C94] mb-1">
+            <div className="w-16 h-16 relative flex items-center justify-center text-claude-text-secondary mb-1">
               <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.8">
                 <rect x="7" y="7" width="15" height="15" rx="1.5" />
                 <rect x="26" y="7" width="15" height="15" rx="1.5" />
@@ -1032,30 +1035,30 @@ export const ProjectsView: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <h2 className="text-sm font-medium text-[#ECEBE7]">Looking to start a project?</h2>
-              <p className="text-xs text-[#8C8A82] leading-relaxed">
+              <h2 className="text-sm font-medium text-claude-text-primary">Looking to start a project?</h2>
+              <p className="text-xs text-claude-text-secondary leading-relaxed">
                 Upload materials, set custom instructions, and organize conversations in one space.
               </p>
             </div>
 
             <button
               onClick={() => setIsNewProjectModalOpen(true)}
-              className="px-4 py-1.5 rounded-xl bg-[#201F1D] hover:bg-[#282724] text-xs font-normal text-[#ECEBE7] border border-[#2D2C28] shadow-sm transition-all"
+              className="px-4 py-1.5 rounded-xl bg-claude-surface hover:bg-claude-input text-xs font-normal text-claude-text-primary border border-claude-border shadow-sm transition-all"
             >
               New project
             </button>
 
             {/* Claude Academy Card */}
-            <div className="w-full text-left p-4 rounded-2xl bg-[#191816] border border-[#242320] space-y-1 mt-6">
-              <div className="text-[11px] text-[#706E68]">Claude Academy</div>
-              <h3 className="text-xs font-semibold text-[#ECEBE7]">Intro to Projects</h3>
-              <p className="text-[11px] text-[#8C8A82] leading-relaxed">
+            <div className="w-full text-left p-4 rounded-2xl bg-claude-bg border border-claude-border-subtle space-y-1 mt-6">
+              <div className="text-[11px] text-claude-text-muted">Claude Academy</div>
+              <h3 className="text-xs font-semibold text-claude-text-primary">Intro to Projects</h3>
+              <p className="text-[11px] text-claude-text-secondary leading-relaxed">
                 Projects keep the chats, files, and instructions for one piece of work together, so the assistant always has the full picture.
               </p>
               <div className="pt-2">
                 <button
                   onClick={() => setShowVideoModal(true)}
-                  className="px-3 py-1 rounded-lg bg-[#201F1D] hover:bg-[#282724] text-xs font-normal text-[#ECEBE7] border border-[#2D2C28] transition-colors"
+                  className="px-3 py-1 rounded-lg bg-claude-surface hover:bg-claude-input text-xs font-normal text-claude-text-primary border border-claude-border transition-colors"
                 >
                   Watch video
                 </button>
@@ -1074,26 +1077,26 @@ export const ProjectsView: React.FC = () => {
                       setActiveProject(proj);
                       setActiveConversationId(null);
                     }}
-                    className="group p-5 rounded-2xl bg-[#1C1B19]/80 border border-[#282724] hover:border-[#383734] hover:bg-[#201F1D] cursor-pointer transition-all flex flex-col justify-between min-h-[110px] shadow-sm relative"
+                    className="group p-5 rounded-2xl bg-claude-card/80 border border-claude-border-subtle hover:border-claude-border hover:bg-claude-surface cursor-pointer transition-all flex flex-col justify-between min-h-[110px] shadow-sm relative"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-1.5">
-                        <h3 className="font-normal text-[14px] text-[#ECEBE7] group-hover:text-white transition-colors truncate max-w-[200px]">
+                        <h3 className="font-normal text-[14px] text-claude-text-primary group-hover:text-claude-text-primary transition-colors truncate max-w-[200px]">
                           {proj.name}
                         </h3>
-                        <ArrowUpRight className="w-3.5 h-3.5 text-[#7E7C76] group-hover:text-[#ECEBE7] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                        <ArrowUpRight className="w-3.5 h-3.5 text-claude-text-muted group-hover:text-claude-text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
                       </div>
 
                       <button
                         onClick={(e) => handleDeleteProject(proj.id, e)}
-                        className="p-1 rounded text-[#7E7C76] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded text-claude-text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                         aria-label="Delete project"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
 
-                    <div className="text-[12px] text-[#706E68]">
+                    <div className="text-[12px] text-claude-text-muted">
                       {formatTimeAgo(proj.updatedAt || proj.createdAt)}
                     </div>
                   </div>
@@ -1111,15 +1114,15 @@ export const ProjectsView: React.FC = () => {
           onClick={() => setIsNewProjectModalOpen(false)}
         >
           <div
-            className="w-full max-w-[480px] bg-[#1F1E1C] border border-[#2E2D2A] rounded-2xl shadow-2xl overflow-hidden p-6 space-y-5 text-xs duration-75"
+            className="w-full max-w-[480px] bg-claude-card border border-claude-border rounded-2xl shadow-2xl overflow-hidden p-6 space-y-5 text-xs duration-75"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header with Title and Close Button */}
             <div className="flex items-center justify-between">
-              <h3 className="text-[17px] font-medium text-[#ECEBE7] tracking-tight">Create a project</h3>
+              <h3 className="text-[17px] font-medium text-claude-text-primary tracking-tight">Create a project</h3>
               <button
                 onClick={() => setIsNewProjectModalOpen(false)}
-                className="p-1 rounded-lg text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#282724] transition-colors"
+                className="p-1 rounded-lg text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-input transition-colors"
                 aria-label="Close"
               >
                 <X className="w-4 h-4" />
@@ -1128,7 +1131,7 @@ export const ProjectsView: React.FC = () => {
 
             <form onSubmit={handleCreateProject} className="space-y-4">
               <div>
-                <label className="block text-[13px] font-normal text-[#ECEBE7] mb-2">
+                <label className="block text-[13px] font-normal text-claude-text-primary mb-2">
                   What are you working on?
                 </label>
                 <input
@@ -1138,12 +1141,12 @@ export const ProjectsView: React.FC = () => {
                   onChange={(e) => setProjectName(e.target.value)}
                   required
                   autoFocus
-                  className="w-full bg-[#262522] border border-[#3A3935] focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] rounded-xl px-3.5 py-2.5 text-[13px] text-[#ECEBE7] placeholder-[#706E68] outline-none transition-all"
+                  className="w-full bg-claude-input border border-claude-border focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] rounded-xl px-3.5 py-2.5 text-[13px] text-claude-text-primary placeholder-claude-text-muted outline-none transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-[13px] font-normal text-[#ECEBE7] mb-2">
+                <label className="block text-[13px] font-normal text-claude-text-primary mb-2">
                   What are you trying to achieve?
                 </label>
                 <textarea
@@ -1151,7 +1154,7 @@ export const ProjectsView: React.FC = () => {
                   placeholder="Describe your project, goals, subject, etc..."
                   value={projectDesc}
                   onChange={(e) => setProjectDesc(e.target.value)}
-                  className="w-full bg-[#262522] border border-[#3A3935] focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] rounded-xl px-3.5 py-2.5 text-[13px] text-[#ECEBE7] placeholder-[#706E68] outline-none transition-all resize-y min-h-[90px]"
+                  className="w-full bg-claude-input border border-claude-border focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] rounded-xl px-3.5 py-2.5 text-[13px] text-claude-text-primary placeholder-claude-text-muted outline-none transition-all resize-y min-h-[90px]"
                 />
               </div>
 
@@ -1159,7 +1162,7 @@ export const ProjectsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsNewProjectModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-[#2A2926] hover:bg-[#343330] text-[13px] font-normal text-[#ECEBE7] transition-colors"
+                  className="px-4 py-2 rounded-xl bg-claude-card-hover hover:bg-claude-card-hover text-[13px] font-normal text-claude-text-primary transition-colors"
                 >
                   Cancel
                 </button>
@@ -1179,23 +1182,23 @@ export const ProjectsView: React.FC = () => {
       {/* Video Modal */}
       {showVideoModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-[#1C1B19] border border-[#2E2D2A] rounded-2xl shadow-2xl p-6 text-center space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#262522]">
-              <span className="font-semibold text-xs text-[#ECEBE7]">Claude Academy: Intro to Projects</span>
-              <button onClick={() => setShowVideoModal(false)} className="text-[#7E7C76] hover:text-[#ECEBE7]">
+          <div className="w-full max-w-md bg-claude-card border border-claude-border rounded-2xl shadow-2xl p-6 text-center space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-claude-border-subtle">
+              <span className="font-semibold text-xs text-claude-text-primary">Claude Academy: Intro to Projects</span>
+              <button onClick={() => setShowVideoModal(false)} className="text-claude-text-muted hover:text-claude-text-primary">
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="py-6 bg-[#141413] rounded-xl border border-[#242320] flex flex-col items-center justify-center space-y-2">
+            <div className="py-6 bg-claude-bg rounded-xl border border-claude-border-subtle flex flex-col items-center justify-center space-y-2">
               <ClaudeProjectsIcon size={40} color="#DA7756" />
-              <p className="text-xs text-[#ECEBE7] font-medium">Projects Keep Your Work In Sync</p>
-              <p className="text-[11px] text-[#8C8A82] max-w-xs leading-relaxed">
+              <p className="text-xs text-claude-text-primary font-medium">Projects Keep Your Work In Sync</p>
+              <p className="text-[11px] text-claude-text-secondary max-w-xs leading-relaxed">
                 Set project instructions and upload context documents once. Claude will automatically reference them for every conversation inside the project.
               </p>
             </div>
             <button
               onClick={() => setShowVideoModal(false)}
-              className="px-4 py-1.5 rounded-xl bg-[#201F1D] text-xs text-[#ECEBE7]"
+              className="px-4 py-1.5 rounded-xl bg-claude-surface text-xs text-claude-text-primary"
             >
               Got it
             </button>

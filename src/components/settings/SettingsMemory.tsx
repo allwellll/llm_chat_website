@@ -52,8 +52,8 @@ export const SettingsMemory: React.FC<SettingsTabProps> = ({ settings, updateSet
     <div className="space-y-6 max-w-xl">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-[#ECEBE7] mb-1">Memory</h3>
-          <p className="text-xs text-[#8C8A82]">Preferences and facts remembered across conversation sessions.</p>
+          <h3 className="text-sm font-semibold text-claude-text-primary mb-1">Memory</h3>
+          <p className="text-xs text-claude-text-secondary">Preferences and facts remembered across conversation sessions.</p>
         </div>
         <input
           type="checkbox"
@@ -73,18 +73,18 @@ export const SettingsMemory: React.FC<SettingsTabProps> = ({ settings, updateSet
           placeholder="Add a fact to remember (e.g. Prefers Tailwind CSS)"
           value={newMemoryText}
           onChange={(e) => setNewMemoryText(e.target.value)}
-          className="flex-1 bg-[#1C1B19] text-xs text-[#ECEBE7] px-3.5 py-2 rounded-xl border border-[#2B2A27] focus:outline-none focus:border-[#DA7756]"
+          className="flex-1 bg-claude-card text-xs text-claude-text-primary px-3.5 py-2 rounded-xl border border-claude-border focus:outline-none focus:border-[#DA7756]"
         />
         <button
           type="submit"
-          className="px-3 py-2 rounded-xl bg-[#201F1D] hover:bg-[#282724] text-xs font-medium text-[#ECEBE7] border border-[#2D2C28] transition-colors"
+          className="px-3 py-2 rounded-xl bg-claude-surface hover:bg-claude-input text-xs font-medium text-claude-text-primary border border-claude-border transition-colors"
         >
           Add
         </button>
       </form>
 
       <div className="space-y-2.5">
-        <div className="flex items-center justify-between text-xs text-[#706E68]">
+        <div className="flex items-center justify-between text-xs text-claude-text-muted">
           <span>Saved memories ({settings.memory.items.length})</span>
           {settings.memory.items.length > 0 && (
             <button
@@ -99,12 +99,12 @@ export const SettingsMemory: React.FC<SettingsTabProps> = ({ settings, updateSet
         {settings.memory.items.map((mem) => (
           <div
             key={mem.id}
-            className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]"
+            className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border"
           >
-            <span className="text-xs text-[#ECEBE7] pr-3">{mem.content}</span>
+            <span className="text-xs text-claude-text-primary pr-3">{mem.content}</span>
             <button
               onClick={() => handleDeleteMemory(mem.id)}
-              className="p-1 text-[#706E68] hover:text-red-400 shrink-0"
+              className="p-1 text-claude-text-muted hover:text-red-400 shrink-0"
               title="Delete memory"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -113,7 +113,7 @@ export const SettingsMemory: React.FC<SettingsTabProps> = ({ settings, updateSet
         ))}
 
         {settings.memory.items.length === 0 && (
-          <div className="p-4 rounded-2xl bg-[#1C1B19] border border-[#2B2A27] text-center text-xs text-[#706E68]">
+          <div className="p-4 rounded-2xl bg-claude-card border border-claude-border text-center text-xs text-claude-text-muted">
             No memories stored yet
           </div>
         )}

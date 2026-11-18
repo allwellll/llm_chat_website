@@ -1,0 +1,43 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { PostgresHistoryStore, validateRecord } from './history-store.mjs';
+import { createChatServer } from './local.mjs';
+const config = { accessToken:'t'.repeat(40), key:'fake', endpoint:'https://example.invalid', secureCookie:false };
+const conversation = (id='one',title='original') => ({id,title,messages:[{id:'m',role:'assistant',content:'answer',thinkingContent:'thought',attachments:[],artifacts:[],createdAt:1}],createdAt:1,updatedAt:1,model:'opus-5'});
+test('validation rejects malformed and oversized histories',()=>{
+ assert.throws(()=>validateRecord('conversation',{id:'x',messages:'bad'}));
+ assert.throws(()=>validateRecord('conversation',conversation('../bad')));
+ assert.throws(()=>validateRecord('conversation',{...conversation(),title:'x'.repeat(2001)}));
+ assert.deepEqual(validateRecord('conversation',conversation()),conversation());
+});
+test('authenticated history API requires same origin and sanitizes database failures', async t=>{
+ const store={list:async()=>{throw new Error('password=do-not-leak');},write:async()=>{throw new Error('password=do-not-leak');}};
+ const server=createChatServer(config,{store}); await new Promise(r=>server.listen(0,'127.0.0.1',r)); t.after(()=>server.close());
+ const base=`http://127.0.0.1:${server.address().port}`;
+ assert.equal((await fetch(base+'/api/history')).status,404);
+ const headers={cookie:`chat_session=${config.accessToken}`,'content-type':'application/json'};
+ const failed=await fetch(base+'/api/history',{headers}); assert.equal(failed.status,503); assert.doesNotMatch(await failed.text(),/password|do-not-leak/);
+ assert.equal((await fetch(base+'/api/history/conversation/one',{method:'PUT',headers,body:JSON.stringify({version:0,data:conversation()})})).status,403);
+ assert.equal((await fetch(base+'/api/history/conversation/one',{method:'PUT',headers:{...headers,origin:'https://evil.invalid'},body:'{}'})).status,403);
+});
+test('real PostgreSQL: roundtrip, CAS, concurrent insert, import and permanent tombstones', async t=>{
+ const runtime=JSON.parse(await readFile(new URL('../runtime.json',import.meta.url),'utf8'));
+ const schema=`history_test_${process.pid}_${Date.now()}`;
+ const store=new PostgresHistoryStore(runtime.database,{schema});
+ t.after(async()=>{await store.pool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);await store.close();});
+ await store.ready();
+ assert.deepEqual(await store.list(),[]);
+ const first=await store.write('conversation','one',0,conversation()); assert.equal(first.version,1);
+ assert.deepEqual((await store.list())[0].data,conversation());
+ const race=await Promise.all([store.write('conversation','one',1,conversation('one','A')),store.write('conversation','one',1,conversation('one','B'))]);
+ assert.equal(race.filter(x=>x.conflict).length,1);
+ const imported=await store.write('conversation','one',0,conversation('one','old'),{importOnly:true}); assert.equal(imported.version,2);
+ const deleted=await store.write('conversation','one',2,null); assert.equal(deleted.deleted,true);
+ const oldImport=await store.write('conversation','one',0,conversation(),{importOnly:true}); assert.equal(oldImport.deleted,true);
+ assert.equal((await store.write('conversation','one',3,conversation())).conflict,true);
+ const inserts=await Promise.all([store.write('conversation','two',0,conversation('two')),store.write('conversation','two',0,conversation('two'))]);assert.equal(inserts.filter(x=>x.conflict).length,1);
+ await store.write('project','p',0,{id:'p',name:'project',createdAt:1,updatedAt:1});
+ await store.write('artifact','a',0,{id:'a',title:'code',content:'<svg/>',identifier:'a',type:'image/svg+xml',createdAt:1});
+ assert.equal((await store.list()).length,4);
+});

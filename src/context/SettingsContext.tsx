@@ -20,14 +20,21 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     saveSettings(settings);
-    if (settings.theme === 'light') {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    } else {
-      document.documentElement.classList.remove('light');
-      document.documentElement.classList.add('dark');
-    }
   }, [settings]);
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const applyTheme = () => {
+      const isDark = settings.theme === 'system' ? media.matches : settings.theme !== 'light';
+      document.documentElement.classList.toggle('dark', isDark);
+      document.documentElement.classList.toggle('light', !isDark);
+    };
+    applyTheme();
+    if (settings.theme === 'system') {
+      media.addEventListener('change', applyTheme);
+      return () => media.removeEventListener('change', applyTheme);
+    }
+  }, [settings.theme]);
 
   const updateSettings = (newSettings: Partial<UserSettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));

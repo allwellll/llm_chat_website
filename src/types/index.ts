@@ -1,4 +1,6 @@
 export type ModelProfileId =
+  | 'gpt-6-astra'
+  | 'gpt-6.1-sol'
   | 'fable-5'
   | 'opus-5'
   | 'sonnet-5'
@@ -40,6 +42,8 @@ export type ArtifactType =
   | 'text/markdown';
 
 export interface Artifact {
+  /** Summary only: body must be loaded before content edits. */
+  _historyUnloaded?: boolean;
   id: string;
   identifier: string;
   type: ArtifactType;
@@ -93,6 +97,8 @@ export interface Message {
 }
 
 export interface Conversation {
+  /** Summary only: body must be loaded before content edits. */
+  _historyUnloaded?: boolean;
   id: string;
   title: string;
   messages: Message[];
@@ -106,6 +112,8 @@ export interface Conversation {
 }
 
 export interface Project {
+  /** Summary only: body must be loaded before content edits. */
+  _historyUnloaded?: boolean;
   id: string;
   name: string;
   description?: string;
@@ -117,6 +125,7 @@ export interface Project {
 }
 
 export interface UserSettings {
+  webSearch?: boolean;
   // Profile
   fullName: string;
   userName: string;

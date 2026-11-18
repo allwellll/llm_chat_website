@@ -10,15 +10,15 @@ export const SettingsCapabilities: React.FC<SettingsTabProps> = ({ settings, upd
   return (
     <div className="space-y-8 max-w-xl">
       <div>
-        <h3 className="text-sm font-semibold text-[#ECEBE7] mb-1">Capabilities</h3>
-        <p className="text-xs text-[#8C8A82]">Tool dispatch, model routing, and visual sandbox toggles.</p>
+        <h3 className="text-sm font-semibold text-claude-text-primary mb-1">Capabilities</h3>
+        <p className="text-xs text-claude-text-secondary">Tool dispatch, model routing, and visual sandbox toggles.</p>
       </div>
 
       <div className="space-y-4">
-        <h4 className="text-xs font-semibold text-[#ECEBE7]">General</h4>
+        <h4 className="text-xs font-semibold text-claude-text-primary">General</h4>
 
         <div className="space-y-1.5">
-          <label className="block text-xs font-medium text-[#B4B3AD]">Tool access mode</label>
+          <label className="block text-xs font-medium text-claude-text-secondary">Tool access mode</label>
           <select
             value={settings.capabilities.toolAccessMode}
             onChange={(e) =>
@@ -26,7 +26,7 @@ export const SettingsCapabilities: React.FC<SettingsTabProps> = ({ settings, upd
                 capabilities: { ...settings.capabilities, toolAccessMode: e.target.value as any }
               })
             }
-            className="w-full bg-[#1C1B19] text-xs text-[#ECEBE7] px-3.5 py-2 rounded-xl border border-[#2B2A27] focus:outline-none focus:border-[#DA7756]"
+            className="w-full bg-claude-card text-xs text-claude-text-primary px-3.5 py-2 rounded-xl border border-claude-border focus:outline-none focus:border-[#DA7756]"
           >
             <option value="needed">Load tools when needed</option>
             <option value="always">Always available</option>
@@ -34,10 +34,10 @@ export const SettingsCapabilities: React.FC<SettingsTabProps> = ({ settings, upd
           </select>
         </div>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">Connector search</span>
-            <p className="text-[11px] text-[#8C8A82]">Search connected services for relevant context</p>
+            <span className="text-xs font-medium text-claude-text-primary">Connector search</span>
+            <p className="text-[11px] text-claude-text-secondary">Search connected services for relevant context</p>
           </div>
           <input
             type="checkbox"
@@ -51,10 +51,10 @@ export const SettingsCapabilities: React.FC<SettingsTabProps> = ({ settings, upd
           />
         </div>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">Switch models when a message is flagged</span>
-            <p className="text-[11px] text-[#8C8A82]">Dynamically fall back to high-capacity profile if needed</p>
+            <span className="text-xs font-medium text-claude-text-primary">Switch models when a message is flagged</span>
+            <p className="text-[11px] text-claude-text-secondary">Dynamically fall back to high-capacity profile if needed</p>
           </div>
           <input
             type="checkbox"
@@ -70,12 +70,12 @@ export const SettingsCapabilities: React.FC<SettingsTabProps> = ({ settings, upd
       </div>
 
       <div className="space-y-4">
-        <h4 className="text-xs font-semibold text-[#ECEBE7]">Visuals</h4>
+        <h4 className="text-xs font-semibold text-claude-text-primary">Visuals</h4>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">Artifacts</span>
-            <p className="text-[11px] text-[#8C8A82]">Generate documents and code in side-by-side workspace</p>
+            <span className="text-xs font-medium text-claude-text-primary">Artifacts</span>
+            <p className="text-[11px] text-claude-text-secondary">Generate documents and code in side-by-side workspace</p>
           </div>
           <input
             type="checkbox"
@@ -89,10 +89,10 @@ export const SettingsCapabilities: React.FC<SettingsTabProps> = ({ settings, upd
           />
         </div>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">Inline visualizations</span>
-            <p className="text-[11px] text-[#8C8A82]">Interactive SVG diagrams and chart widgets in chat</p>
+            <span className="text-xs font-medium text-claude-text-primary">Inline visualizations</span>
+            <p className="text-[11px] text-claude-text-secondary">Interactive SVG diagrams and chart widgets in chat</p>
           </div>
           <input
             type="checkbox"
@@ -108,12 +108,12 @@ export const SettingsCapabilities: React.FC<SettingsTabProps> = ({ settings, upd
       </div>
 
       <div className="space-y-4">
-        <h4 className="text-xs font-semibold text-[#ECEBE7]">Code execution and file creation</h4>
+        <h4 className="text-xs font-semibold text-claude-text-primary">Code execution and file creation</h4>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">Sandboxed code execution</span>
-            <p className="text-[11px] text-[#8C8A82]">Execute JavaScript/React snippets in iframe sandbox</p>
+            <span className="text-xs font-medium text-claude-text-primary">Sandboxed code execution</span>
+            <p className="text-[11px] text-claude-text-secondary">Execute JavaScript/React snippets in iframe sandbox</p>
           </div>
           <input
             type="checkbox"
@@ -127,10 +127,10 @@ export const SettingsCapabilities: React.FC<SettingsTabProps> = ({ settings, upd
           />
         </div>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">File creation & download</span>
-            <p className="text-[11px] text-[#8C8A82]">Allow one-click downloading of generated artifacts</p>
+            <span className="text-xs font-medium text-claude-text-primary">File creation & download</span>
+            <p className="text-[11px] text-claude-text-secondary">Allow one-click downloading of generated artifacts</p>
           </div>
           <input
             type="checkbox"

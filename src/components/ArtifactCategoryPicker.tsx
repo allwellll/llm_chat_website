@@ -49,7 +49,7 @@ export const ArtifactCategoryPicker: React.FC<ArtifactCategoryPickerProps> = ({
 
   return (
     <div className={`w-full flex flex-col items-center justify-start ${compact ? 'pt-4 pb-6' : 'pt-14 sm:pt-20 pb-16'} px-4 max-w-4xl mx-auto select-none`}>
-      <h2 className="text-[14px] sm:text-[15px] font-normal text-[#C4C3BE] text-center mb-7 max-w-xl leading-relaxed">
+      <h2 className="text-[14px] sm:text-[15px] font-normal text-claude-text-primary text-center mb-7 max-w-xl leading-relaxed">
         Let's get cooking! Pick an artifact category or start building your idea from scratch.
       </h2>
 
@@ -64,15 +64,15 @@ export const ArtifactCategoryPicker: React.FC<ArtifactCategoryPickerProps> = ({
               onClick={() => handleCardClick(cat.title)}
               className={`group relative p-5 h-[130px] rounded-2xl border cursor-pointer transition-all duration-150 flex flex-col justify-between shadow-sm active:scale-[0.99] ${
                 isChosen
-                  ? 'bg-[#282725] border-[#DA7756]/60 text-white ring-1 ring-[#DA7756]/40'
-                  : 'bg-[#1C1B19]/80 border-[#282725] hover:border-[#383734] hover:bg-[#201F1D] text-[#ECEBE7]'
+                  ? 'bg-claude-input border-[#DA7756]/60 text-claude-text-primary ring-1 ring-[#DA7756]/40'
+                  : 'bg-claude-card/80 border-claude-border-subtle hover:border-claude-border hover:bg-claude-surface text-claude-text-primary'
               }`}
             >
-              <span className="text-[14px] font-normal group-hover:text-white transition-colors leading-snug">
+              <span className="text-[14px] font-normal group-hover:text-claude-text-primary transition-colors leading-snug">
                 {cat.title}
               </span>
 
-              <div className={`self-end transition-colors ${isChosen ? 'text-[#DA7756]' : 'text-[#7E7C76] group-hover:text-[#ECEBE7]'}`}>
+              <div className={`self-end transition-colors ${isChosen ? 'text-[#DA7756]' : 'text-claude-text-muted group-hover:text-claude-text-primary'}`}>
                 <IconComponent className="w-4 h-4 stroke-[1.8]" />
               </div>
             </div>

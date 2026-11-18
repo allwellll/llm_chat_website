@@ -34,28 +34,28 @@ export const SettingsPrivacy: React.FC<SettingsTabProps> = ({ settings, updateSe
   return (
     <div className="space-y-8 max-w-xl">
       <div>
-        <h3 className="text-sm font-semibold text-[#ECEBE7] mb-1">Privacy</h3>
-        <p className="text-xs text-[#8C8A82]">Control how your data and conversations are processed.</p>
+        <h3 className="text-sm font-semibold text-claude-text-primary mb-1">Privacy</h3>
+        <p className="text-xs text-claude-text-secondary">Control how your data and conversations are processed.</p>
       </div>
 
       <div
         onClick={() => setShowPrivacyDetail(!showPrivacyDetail)}
-        className="flex items-center justify-between p-4 rounded-2xl bg-[#1C1B19] border border-[#2B2A27] hover:border-[#DA7756]/50 cursor-pointer transition-all"
+        className="flex items-center justify-between p-4 rounded-2xl bg-claude-card border border-claude-border hover:border-[#DA7756]/50 cursor-pointer transition-all"
       >
         <div className="space-y-0.5">
-          <div className="text-xs font-medium text-[#ECEBE7]">How we use your data</div>
-          <p className="text-[11px] text-[#8C8A82]">Encrypted transit, local storage isolation, zero leakage</p>
+          <div className="text-xs font-medium text-claude-text-primary">How we use your data</div>
+          <p className="text-[11px] text-claude-text-secondary">Encrypted transit, local storage isolation, zero leakage</p>
         </div>
-        <ArrowRight className="w-4 h-4 text-[#8C8A82]" />
+        <ArrowRight className="w-4 h-4 text-claude-text-secondary" />
       </div>
 
       <div className="space-y-4">
-        <h4 className="text-xs font-semibold text-[#ECEBE7]">Preferences</h4>
+        <h4 className="text-xs font-semibold text-claude-text-primary">Preferences</h4>
         
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">Location metadata</span>
-            <p className="text-[11px] text-[#8C8A82]">Attach approximate timezone & region for localized prompts</p>
+            <span className="text-xs font-medium text-claude-text-primary">Location metadata</span>
+            <p className="text-[11px] text-claude-text-secondary">Attach approximate timezone & region for localized prompts</p>
           </div>
           <input
             type="checkbox"
@@ -69,10 +69,10 @@ export const SettingsPrivacy: React.FC<SettingsTabProps> = ({ settings, updateSe
           />
         </div>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">Improve AI models</span>
-            <p className="text-[11px] text-[#8C8A82]">Allow anonymized conversation feedback to tune evaluation suites</p>
+            <span className="text-xs font-medium text-claude-text-primary">Improve AI models</span>
+            <p className="text-[11px] text-claude-text-secondary">Allow anonymized conversation feedback to tune evaluation suites</p>
           </div>
           <input
             type="checkbox"
@@ -88,26 +88,26 @@ export const SettingsPrivacy: React.FC<SettingsTabProps> = ({ settings, updateSe
       </div>
 
       <div className="space-y-3">
-        <h4 className="text-xs font-semibold text-[#ECEBE7]">Your data</h4>
+        <h4 className="text-xs font-semibold text-claude-text-primary">Your data</h4>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">Export data</span>
-            <p className="text-[11px] text-[#8C8A82]">Download all chats, memories, and settings in JSON</p>
+            <span className="text-xs font-medium text-claude-text-primary">Export data</span>
+            <p className="text-[11px] text-claude-text-secondary">Download all chats, memories, and settings in JSON</p>
           </div>
           <button
             onClick={handleExportData}
-            className="px-3 py-1.5 rounded-xl bg-[#242320] hover:bg-[#2A2926] text-xs font-medium text-[#ECEBE7] border border-[#33312E] transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-xl bg-claude-surface hover:bg-claude-card-hover text-xs font-medium text-claude-text-primary border border-claude-border transition-colors flex items-center gap-1.5"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export data</span>
           </button>
         </div>
 
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#1C1B19] border border-[#2B2A27]">
+        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-claude-card border border-claude-border">
           <div>
-            <span className="text-xs font-medium text-[#ECEBE7]">Clear all chat history</span>
-            <p className="text-[11px] text-[#8C8A82]">Delete all local conversations permanently</p>
+            <span className="text-xs font-medium text-claude-text-primary">Clear all chat history</span>
+            <p className="text-[11px] text-claude-text-secondary">Delete all local conversations permanently</p>
           </div>
           <button
             onClick={() => {

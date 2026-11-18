@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {HistorySync} from '../src/services/historySync.mjs';
+const full={id:'p',name:'project',customInstructions:'original',files:[{name:'secret',textContent:'keep'}],createdAt:1,updatedAt:1};
+const summary={kind:'project',id:'p',version:1,summary:true,data:{id:'p',name:'project',createdAt:1,updatedAt:1}};
+function setup(record=summary){const writes=[];const sync=new HistorySync({storage:{getItem:()=> '1'},request:async(path,opt)=>{if(opt){const body=JSON.parse(opt.body);writes.push(body);return {record:{kind:record.kind,id:record.id,version:body.version+1,data:body.data}};}if(path.includes('/changes'))return {records:[],cursor:'9'};return {record:{...record,summary:false,data:full},records:[record],cursor:'1'};}});return {sync,writes};}
+test('unloaded project edits preserve explicit instructions and files; rename preserves original files',async()=>{
+ for(const edit of [{customInstructions:'edited',files:[{name:'new',textContent:'new'}]},{name:'renamed'},{customInstructions:'',files:[{name:'new'}]}]){const {sync,writes}=setup();await sync.start();const snap=sync.snapshot();snap.projects=snap.projects.map(p=>({...p,...edit}));sync.update(snap);await sync.flush();assert.equal(writes[0].data.customInstructions,edit.customInstructions??full.customInstructions);assert.deepEqual(writes[0].data.files,edit.files??full.files);}
+});
+test('deferred stream remote update/delete replays after stream ends, keeping highest version',async()=>{
+ for(const deleted of [false,true]){const r={kind:'conversation',id:'c',version:1,data:{id:'c',title:'old',messages:[{isStreaming:true}]}};const {sync}=setup(r);await sync.start();sync.merge([{...r,version:3,deleted,data:{...r.data,title:'new',messages:[]}}]);sync.merge([{...r,version:2,data:{...r.data,title:'stale'}}]);sync.local.set('conversation:c',{...r.data,messages:[]});await sync.refresh();assert.equal(sync.local.get('conversation:c')?.title,deleted?undefined:'new');assert.equal(sync.remote.get('conversation:c').version,3);}
+});
+test('dirty deferred change never rebases pending CAS, and stale snapshot cannot delete other records',async()=>{const {sync,writes}=setup();await sync.start();const snap=sync.snapshot();snap.projects=snap.projects.map(p=>({...p,name:'edit'}));sync.update(snap);sync.merge([{...summary,version:7,deleted:true}]);await sync.refresh();assert.equal(sync.dirty.get('project:p').version,1);sync.merge([]);assert.ok(sync.local.has('project:p'));await sync.flush();assert.equal(writes[0].version,1);});
+test('project send resolves missing page entry by id before upstream; unloaded editor never exposed',async()=>{const source=await readFile(new URL('../src/context/ChatContext.tsx',import.meta.url),'utf8');assert.match(source,/if\s*\(projId\s*&&\s*\(!proj\s*\|\|\s*proj\._historyUnloaded\)\)\s*proj\s*=\s*await sync\.load\('project',\s*projId\)/);assert.match(source,/setActiveProjectState\(project\?\._historyUnloaded\s*\?\s*null\s*:\s*project\)/);});

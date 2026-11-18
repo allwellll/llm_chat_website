@@ -37,11 +37,11 @@ export const ArtifactsView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#141413] text-[#ECEBE7] overflow-y-auto select-none">
+    <div className="flex-1 flex flex-col h-full bg-claude-bg text-claude-text-primary overflow-y-auto select-none">
       
       {/* Top Header matching Image 1 */}
       <div className="flex items-center justify-between px-8 py-6 max-w-5xl mx-auto w-full">
-        <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-[#ECEBE7]">
+        <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-claude-text-primary">
           Artifacts
         </h1>
 
@@ -55,13 +55,13 @@ export const ArtifactsView: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search artifacts..."
                 autoFocus
-                className="bg-[#1C1B19] border border-[#2E2D2A] rounded-xl px-3 py-1.5 text-xs text-[#ECEBE7] placeholder-[#666] outline-none focus:border-[#DA7756]"
+                className="bg-claude-card border border-claude-border rounded-xl px-3 py-1.5 text-xs text-claude-text-primary placeholder-[#666] outline-none focus:border-[#DA7756]"
               />
             </div>
           ) : (
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 rounded-xl text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#201F1D] transition-colors"
+              className="p-2 rounded-xl text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
               title="Search artifacts"
             >
               <Search className="w-4 h-4" />
@@ -86,7 +86,7 @@ export const ArtifactsView: React.FC = () => {
           <div className="flex flex-col items-center text-center space-y-6 max-w-md my-auto">
             
             {/* Minimalist Geometric line art icon (Square, triangle, circle with hand pointer) */}
-            <div className="w-16 h-16 relative flex items-center justify-center text-[#9E9C94]">
+            <div className="w-16 h-16 relative flex items-center justify-center text-claude-text-secondary">
               <svg width="52" height="52" viewBox="0 0 52 52" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="8" y="14" width="16" height="16" rx="2" />
                 <path d="M34 10L42 24H26L34 10Z" />
@@ -97,10 +97,10 @@ export const ArtifactsView: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <h2 className="text-base font-semibold text-[#ECEBE7]">
+              <h2 className="text-base font-semibold text-claude-text-primary">
                 What will you build with artifacts?
               </h2>
-              <p className="text-xs text-[#8C8A82] leading-relaxed">
+              <p className="text-xs text-claude-text-secondary leading-relaxed">
                 If you can dream it, you can build it. Take apps, games, templates, and tools from thought to reality.
               </p>
             </div>
@@ -108,7 +108,7 @@ export const ArtifactsView: React.FC = () => {
             {/* Dark Pill Button matching Image 1 */}
             <button
               onClick={startNewArtifactChat}
-              className="px-4 py-2 rounded-xl bg-[#201F1D] hover:bg-[#282724] text-xs font-normal text-[#ECEBE7] border border-[#2D2C28] shadow-sm transition-all"
+              className="px-4 py-2 rounded-xl bg-claude-surface hover:bg-claude-input text-xs font-normal text-claude-text-primary border border-claude-border shadow-sm transition-all"
             >
               New artifact
             </button>
@@ -125,26 +125,26 @@ export const ArtifactsView: React.FC = () => {
                     setActiveArtifact(art);
                     setIsArtifactPaneOpen(true);
                   }}
-                  className="group p-5 rounded-2xl bg-[#1C1B19]/80 border border-[#282725] hover:border-[#383734] hover:bg-[#201F1D] cursor-pointer transition-all flex flex-col justify-between shadow-sm"
+                  className="group p-5 rounded-2xl bg-claude-card/80 border border-claude-border-subtle hover:border-claude-border hover:bg-claude-surface cursor-pointer transition-all flex flex-col justify-between shadow-sm"
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         {getTypeIcon(art.type)}
-                        <h3 className="font-medium text-sm text-[#ECEBE7] group-hover:text-white transition-colors truncate">
+                        <h3 className="font-medium text-sm text-claude-text-primary group-hover:text-claude-text-primary transition-colors truncate">
                           {art.title}
                         </h3>
                       </div>
-                      <span className="text-[10px] font-mono text-[#8C8A82] bg-[#141413] px-2 py-0.5 rounded border border-[#262522]">
+                      <span className="text-[10px] font-mono text-claude-text-secondary bg-claude-bg px-2 py-0.5 rounded border border-claude-border-subtle">
                         {art.type.includes('react') ? 'React' : art.type.includes('html') ? 'HTML' : 'File'}
                       </span>
                     </div>
-                    <p className="text-xs font-mono text-[#7E7C76] truncate">
+                    <p className="text-xs font-mono text-claude-text-muted truncate">
                       {art.identifier}
                     </p>
                   </div>
 
-                  <div className="pt-4 mt-4 border-t border-[#262522] flex items-center justify-between text-xs text-[#7E7C76]">
+                  <div className="pt-4 mt-4 border-t border-claude-border-subtle flex items-center justify-between text-xs text-claude-text-muted">
                     <span>{new Date(art.createdAt).toLocaleDateString()}</span>
                     <div className="flex items-center gap-2">
                       <button
@@ -154,7 +154,7 @@ export const ArtifactsView: React.FC = () => {
                             deleteArtifact(art.id);
                           }
                         }}
-                        className="p-1 rounded text-[#7E7C76] hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 rounded text-claude-text-muted hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Delete artifact"
                         aria-label="Delete artifact"
                       >

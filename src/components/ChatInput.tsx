@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Plus,
+  Globe,
   ArrowUp,
   Square,
   MicOff,
@@ -38,7 +39,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     activeConversation
   } = useChat();
 
-  const { settings } = useSettings();
+  const { settings, updateSettings } = useSettings();
 
   const [input, setInput] = useState('');
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -46,6 +47,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isComposingRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
 
@@ -190,11 +192,41 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const handlePaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const clipboard = event.clipboardData;
+    const supported = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
+    // Prefer items: the same file often appears in both items and files.
+    const itemFiles = Array.from(clipboard.items || [])
+      .filter(item => item.kind === 'file' && supported.has(item.type))
+      .map(item => item.getAsFile())
+      .filter((file): file is File => file !== null);
+    const images = itemFiles.length ? itemFiles : Array.from(clipboard.files || []).filter(file => supported.has(file.type));
+    if (!images.length) return;
+    // Mixed text+image pastes retain the browser's normal text insertion.
+    if (!clipboard.getData('text/plain')) event.preventDefault();
+    images.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAttachments(previous => [...previous, {
+          id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: file.name || `pasted-image.${file.type.split('/')[1]}`,
+          type: file.type,
+          size: file.size,
+          dataUrl: reader.result as string
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const removeAttachment = (id: string) => {
     setAttachments((prev) => prev.filter((a) => a.id !== id));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // IME confirmation belongs to the input method, not send/stop. Safari can
+    // fire compositionend before its final keydown, which still has code 229.
+    if (isComposingRef.current || e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229) return;
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -228,7 +260,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           <button
             type="button"
             onClick={() => setInput('Can you provide a quick answer?')}
-            className="px-3 py-1 rounded-full bg-[#1C1B19] hover:bg-[#242320] border border-[#2E2D2A] text-[11px] font-medium text-[#9C9A92] hover:text-[#ECEBE7] shadow-sm transition-all flex items-center gap-1.5"
+            className="px-3 py-1 rounded-full bg-claude-card hover:bg-claude-surface border border-claude-border text-[11px] font-medium text-claude-text-secondary hover:text-claude-text-primary shadow-sm transition-all flex items-center gap-1.5"
           >
             <Sparkles className="w-3 h-3 text-[#DA7756]" />
             <span>Quick answer</span>
@@ -247,7 +279,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       />
 
       {/* Main Input Box Card (matching Claude exact geometry) */}
-      <div className="bg-[#1F1E1C] rounded-[22px] border border-[#2E2D2A] hover:border-[#383733] focus-within:border-[#4A4843] transition-all shadow-md">
+      <div className="bg-claude-card rounded-[22px] border border-claude-border hover:border-claude-border focus-within:border-claude-border transition-all shadow-md">
         
         {/* Attachment Previews */}
         {attachments.length > 0 && (
@@ -255,24 +287,24 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             {attachments.map((att) => (
               <div
                 key={att.id}
-                className="group relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#141413] border border-[#2E2D2A] text-xs text-[#ECEBE7] max-w-xs"
+                className="group relative flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-claude-bg border border-claude-border text-xs text-claude-text-primary max-w-xs"
               >
                 {att.dataUrl ? (
                   <img
                     src={att.dataUrl}
                     alt={att.name}
-                    className="w-7 h-7 object-cover rounded border border-[#333]"
+                    className="w-7 h-7 object-cover rounded border border-claude-border"
                   />
                 ) : att.name.endsWith('.js') || att.name.endsWith('.ts') || att.name.endsWith('.py') ? (
                   <FileCode className="w-4 h-4 text-[#DA7756]" />
                 ) : (
-                  <FileText className="w-4 h-4 text-[#8C8A82]" />
+                  <FileText className="w-4 h-4 text-claude-text-secondary" />
                 )}
                 <span className="truncate text-xs">{att.name}</span>
                 <button
                   type="button"
                   onClick={() => removeAttachment(att.id)}
-                  className="ml-1 text-[#7E7C76] hover:text-red-400 p-0.5 rounded"
+                  className="ml-1 text-claude-text-muted hover:text-red-400 p-0.5 rounded"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -288,17 +320,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             rows={1}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onPaste={handlePaste}
+            onCompositionStart={() => { isComposingRef.current = true; }}
+            onCompositionEnd={() => { isComposingRef.current = false; }}
+            onBlur={() => { isComposingRef.current = false; }}
             onKeyDown={handleKeyDown}
             placeholder={forcePlaceholder || (hasMessages ? 'Write a message...' : 'How can I help you today?')}
-            className="w-full bg-transparent text-[#ECEBE7] placeholder-[#706E68] text-[14.5px] resize-none focus:outline-none leading-relaxed font-sans max-h-[220px]"
+            className="w-full bg-transparent text-claude-text-primary placeholder-claude-text-muted text-[14.5px] resize-none focus:outline-none leading-relaxed font-sans max-h-[220px]"
           />
         </div>
 
         {/* Bottom Action Bar (Seamless without harsh dividing border) */}
-        <div className="flex items-center justify-between px-3 pb-2.5 pt-1">
+        <div className="composer-toolbar flex items-center justify-between px-3 pb-2.5 pt-1">
           
           {/* Left Actions: + and Mode toggle */}
-          <div className="flex items-center gap-2 relative">
+          <div className="composer-tools flex items-center gap-2 relative">
             
             {/* The "+" Button with AddContentDropdown */}
             <div className="relative">
@@ -307,8 +343,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                 onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
                 className={`p-1.5 rounded-lg transition-colors border ${
                   isAddMenuOpen
-                    ? 'bg-[#282724] text-[#ECEBE7] border-[#34332F]'
-                    : 'text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#242320] border-transparent'
+                    ? 'bg-claude-input text-claude-text-primary border-claude-border'
+                    : 'text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface border-transparent'
                 }`}
                 title="Add content, screenshot, or skills (Ctrl+U)"
               >
@@ -323,16 +359,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               />
             </div>
 
+            <button
+              type="button"
+              role="switch"
+              aria-checked={settings.webSearch === true}
+              aria-label="网页检索"
+              onClick={() => updateSettings({ webSearch: settings.webSearch !== true })}
+              className={`composer-search px-2 py-1 rounded-lg text-xs transition-colors ${settings.webSearch === true ? 'bg-[#DA7756]/20 text-[#DA7756]' : 'text-claude-text-secondary bg-claude-surface'}`}
+              title="关闭后，本次及后续请求不携带 Web Search 工具；选择会保存在当前浏览器"
+            >
+              <Globe className="composer-search-icon hidden w-4 h-4" aria-hidden="true" />
+              <span className="composer-search-label">🌐 网页检索 {settings.webSearch === true ? '开' : '关'}</span>
+            </button>
             {/* Chat / Cowork Mode Toggle (only on landing page) */}
             {!hasMessages && (
-              <div className="flex items-center bg-[#141413] p-0.5 rounded-lg border border-[#242320] text-xs">
+              <div className="composer-modes flex items-center bg-claude-bg p-0.5 rounded-lg border border-claude-border-subtle text-xs">
                 <button
                   type="button"
                   onClick={() => setActiveMode('chat')}
                   className={`px-2.5 py-1 rounded-md transition-all font-normal ${
                     activeMode === 'chat'
-                      ? 'bg-[#2A2824] text-[#ECEBE7] shadow-sm'
-                      : 'text-[#8C8A82] hover:text-[#ECEBE7]'
+                      ? 'bg-claude-input text-claude-text-primary shadow-sm'
+                      : 'text-claude-text-secondary hover:text-claude-text-primary'
                   }`}
                 >
                   Chat
@@ -342,8 +390,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   onClick={() => setActiveMode('cowork')}
                   className={`px-2.5 py-1 rounded-md transition-all font-normal ${
                     activeMode === 'cowork'
-                      ? 'bg-[#2A2824] text-[#ECEBE7] shadow-sm'
-                      : 'text-[#8C8A82] hover:text-[#ECEBE7]'
+                      ? 'bg-claude-input text-claude-text-primary shadow-sm'
+                      : 'text-claude-text-secondary hover:text-claude-text-primary'
                   }`}
                 >
                   Cowork
@@ -353,7 +401,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </div>
 
           {/* Right Actions: Model selector, Mic, Waveform, Send */}
-          <div className="flex items-center gap-1.5 relative">
+          <div className="composer-send-actions flex items-center gap-1.5 relative">
             
             {/* Model Selector */}
             <ModelSelectorDropdown />
@@ -365,20 +413,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               className={`p-1.5 rounded-lg transition-colors ${
                 isListening
                   ? 'bg-red-500/20 text-red-400 border border-red-500/40 animate-pulse'
-                  : 'text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#242320]'
+                  : 'text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface'
               }`}
               title={isListening ? 'Stop listening' : 'Voice dictation'}
             >
-              {isListening ? <MicOff className="w-4 h-4" /> : <ClaudeMic size={17} color="#8C8A82" />}
+              {isListening ? <MicOff className="w-4 h-4" /> : <ClaudeMic size={17} color="currentColor" />}
             </button>
 
             {/* Claude Waveform Icon (matching screenshot) */}
             <button
               type="button"
-              className="p-1.5 rounded-lg text-[#8C8A82] hover:text-[#ECEBE7] hover:bg-[#242320] transition-colors"
+              className="composer-waveform p-1.5 rounded-lg text-claude-text-secondary hover:text-claude-text-primary hover:bg-claude-surface transition-colors"
               title="Voice Mode"
             >
-              <ClaudeWaveform size={17} color="#8C8A82" />
+              <ClaudeWaveform size={17} color="currentColor" />
             </button>
 
             {/* Send / Stop Button */}
@@ -391,7 +439,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
                   ? 'bg-[#DA7756] hover:bg-[#C86545] text-white shadow'
                   : isReadyToSend
                   ? 'bg-[#DA7756] hover:bg-[#C86545] text-white shadow-sm cursor-pointer'
-                  : 'bg-[#252422] text-[#4E4D48] cursor-not-allowed'
+                  : 'bg-claude-input text-claude-text-muted cursor-not-allowed'
               }`}
               title={isStreaming ? 'Stop response' : 'Send message (Enter)'}
             >
@@ -409,7 +457,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       </div>
 
       {/* Footer Disclaimer */}
-      <p className="text-center text-[10px] text-[#66645E] mt-2">
+      <p className="text-center text-[10px] text-claude-text-muted mt-2">
         Claude can make mistakes. Please double-check responses.
       </p>
     </div>

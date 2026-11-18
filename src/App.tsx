@@ -16,19 +16,21 @@ import { useSettings } from './context/SettingsContext';
 import { useAuth } from './context/AuthContext';
 import { LoginView } from './components/LoginView';
 import { ActivePageView } from './types';
-import { ArrowDown, PanelLeftOpen } from 'lucide-react';
+import { ArrowDown, PanelLeftOpen, Plus } from 'lucide-react';
 
 // Lazy load large views
 const CustomizeView = React.lazy(() =>
   import('./components/CustomizeView').then((mod) => ({ default: mod.CustomizeView }))
 );
-const CodeWorkspaceView = React.lazy(() =>
-  import('./components/code/CodeWorkspaceView').then((mod) => ({ default: mod.CodeWorkspaceView }))
-);
+
 
 const ClaudeWorkspace: React.FC = () => {
   const {
     activeConversation,
+    activeConversationId,
+    conversationLoadError,
+    retryConversationLoad,
+    createNewConversation,
     activePageView,
     setActivePageView,
     isArtifactPaneOpen,
@@ -118,7 +120,7 @@ const ClaudeWorkspace: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#141413] text-[#ECEBE7] font-sans antialiased selection:bg-[#DA7756]/30">
+    <div className="flex h-screen w-screen overflow-hidden bg-claude-bg text-claude-text-primary font-sans antialiased selection:bg-[#DA7756]/30">
       {/* Left Navigation Sidebar */}
       <Sidebar
         isOpen={isSidebarOpen}
@@ -127,8 +129,33 @@ const ClaudeWorkspace: React.FC = () => {
       />
 
       {/* Main Workspace Viewport */}
-      <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-[#141413]">
+      <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden bg-claude-bg">
         
+        {/* One persistent mobile entry point, independent of the current view. */}
+        <header className="md:hidden flex h-14 shrink-0 items-center justify-between gap-2 px-3 border-b border-claude-border-subtle bg-claude-bg">
+          <button
+            type="button"
+            aria-label="打开会话菜单"
+            aria-controls="conversation-sidebar"
+            aria-expanded={isSidebarOpen}
+            onClick={() => setIsSidebarOpen(open => !open)}
+            className="flex h-11 min-w-[44px] shrink-0 items-center justify-center gap-2 rounded-lg px-2 text-claude-text-primary hover:bg-claude-surface"
+          >
+            <PanelLeftOpen className="h-5 w-5" />
+            <span className="text-sm">会话</span>
+          </button>
+          <span className="font-serif text-xl text-claude-text-primary">Claude</span>
+          <button
+            type="button"
+            aria-label="新建会话"
+            onClick={() => { createNewConversation(); setIsSidebarOpen(false); }}
+            className="flex h-11 min-w-[44px] shrink-0 items-center justify-center gap-1 rounded-lg px-2 text-claude-text-primary hover:bg-claude-surface"
+          >
+            <Plus className="h-5 w-5" />
+            <span className="text-sm">新建</span>
+          </button>
+        </header>
+
         {/* Top Header for active chat */}
         {activePageView === 'chat' && hasMessages && (
           <ActiveChatHeader
@@ -149,11 +176,11 @@ const ClaudeWorkspace: React.FC = () => {
           {/* Code Workspace View */}
           {activePageView === 'code' && (
             <React.Suspense fallback={
-              <div className="flex-1 flex items-center justify-center bg-[#141413]">
-                <div className="text-sm text-[#8C8A82]">Loading Code Workspace...</div>
+              <div className="flex-1 flex items-center justify-center bg-claude-bg">
+                <div className="text-sm text-claude-text-secondary">Loading Code Workspace...</div>
               </div>
             }>
-              <CodeWorkspaceView />
+              <div className="p-8 text-sm text-claude-text-secondary">Claude Code / terminal execution is not enabled. Use chat for coding assistance.</div>
             </React.Suspense>
           )}
 
@@ -161,7 +188,7 @@ const ClaudeWorkspace: React.FC = () => {
           {activePageView === 'customize' && (
             <React.Suspense fallback={
               <div className="flex-1 flex items-center justify-center">
-                <div className="text-sm text-[#8C8A82]">Loading...</div>
+                <div className="text-sm text-claude-text-secondary">Loading...</div>
               </div>
             }>
               <CustomizeView />
@@ -171,7 +198,11 @@ const ClaudeWorkspace: React.FC = () => {
           {/* Chat View */}
           {activePageView === 'chat' && (
             <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
-              {!hasMessages ? (
+              {activeConversationId && !activeConversation ? (
+                <div className="p-8 text-sm" role="alert">{conversationLoadError || '正在打开会话…'}</div>
+              ) : activeConversation?._historyUnloaded ? (
+                <div className="p-8 text-sm" role={conversationLoadError?'alert':'status'}>{conversationLoadError || '正在加载会话…'}{conversationLoadError && <button className="underline ml-3" onClick={retryConversationLoad}>重试</button>}</div>
+              ) : !hasMessages ? (
                 /* Landing / Empty Chat State or Artifact Starter Picker */
                 activeConversation?.isArtifactPicker ? (
                   <div className="flex-1 overflow-y-auto flex flex-col justify-start">
@@ -213,7 +244,7 @@ const ClaudeWorkspace: React.FC = () => {
                   {showScrollBottom && (
                     <button
                       onClick={scrollToBottom}
-                      className="absolute bottom-28 right-8 p-2 rounded-full bg-[#201F1D] hover:bg-[#282724] border border-[#2E2D2A] text-[#8C8A82] hover:text-[#ECEBE7] shadow-xl z-20 transition-all"
+                      className="absolute bottom-28 right-8 p-2 rounded-full bg-claude-surface hover:bg-claude-input border border-claude-border text-claude-text-secondary hover:text-claude-text-primary shadow-xl z-20 transition-all"
                       title="Scroll to bottom"
                       aria-label="Scroll to bottom"
                     >
@@ -222,7 +253,7 @@ const ClaudeWorkspace: React.FC = () => {
                   )}
 
                   {/* Bottom Sticky Composer */}
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-[#141413] via-[#141413]/95 to-transparent pt-8 pb-3 px-4 pointer-events-none">
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-claude-bg via-claude-bg/95 to-transparent pt-8 pb-3 px-4 pointer-events-none">
                     <div className="pointer-events-auto">
                       <ChatInput compact />
                     </div>

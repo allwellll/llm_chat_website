@@ -30,3 +30,10 @@ lerna-debug.log*
 
 # Agent data
 .gemini
+runtime.json
+runtime.json.*
+dist.*-staging/
+dist.before-*/
+私人登录入口.txt
+nginx-original.conf
+*.log
